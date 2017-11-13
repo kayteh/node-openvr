@@ -27,6 +27,32 @@ class FakeVRDisplay {
     };
   }
 }
+class VRFrameData {
+  constructor() {
+    this.leftProjectionMatrix = new Float32Array(16);
+    this.leftViewMatrix = new Float32Array(16);
+    this.rightProjectionMatrix = new Float32Array(16);
+    this.rightViewMatrix = new Float32Array(16);
+    this.pose = new VRPose();
+  }
+}
+class VRPose {
+  constructor(position = new Float32Array(3), orientation = new Float32Array(4)) {
+    this.position = position;
+    this.orientation = orientation;
+  }
+
+  set(position, orientation) {
+    this.position[0] = position.x;
+    this.position[1] = position.y;
+    this.position[2] = position.z;
+
+    this.orientation[0] = orientation.x;
+    this.orientation[1] = orientation.y;
+    this.orientation[2] = orientation.z;
+    this.orientation[3] = orientation.w;
+  }
+}
 
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
