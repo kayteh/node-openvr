@@ -16,6 +16,7 @@
       'sources': [
         'src/bindings.cpp',
         'src/ivrsystem.cpp',
+        'src/ivrcompositor.cpp',
         'src/openvr.cpp'
       ],
       'include_dirs': [
