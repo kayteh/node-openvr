@@ -6,9 +6,6 @@
 
 using namespace v8;
 
-// using TrackedDevicePoseArray = std::array<vr::TrackedDevicePose_t, vr::k_unMaxTrackedDeviceCount>;
-// using TrackedDeviceIndexArray = std::array<vr::TrackedDeviceIndex_t, vr::k_unMaxTrackedDeviceCount>;
-
 //=============================================================================
 NAN_MODULE_INIT(IVRCompositor::Init)
 {
@@ -71,9 +68,15 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
 {
   IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
-  if (info.Length() != 0)
+  if (info.Length() != 1)
   {
     Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  if (!info[0]->IsFloat32Array() || Local<Float32Array>::Cast(info[0])->Length() != 16)
+  {
+    Nan::ThrowTypeError("Argument[0] must be a Float32Array(16).");
     return;
   }
 
@@ -81,32 +84,46 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
 	vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
   bool bPoseIsValid = trackedDevicePose[0].bPoseIsValid;
-  vr::HmdMatrix34_t mDeviceToAbsoluteTracking = trackedDevicePose[0].mDeviceToAbsoluteTracking;
+  if (bPoseIsValid) {
+    vr::HmdMatrix34_t mDeviceToAbsoluteTracking = trackedDevicePose[0].mDeviceToAbsoluteTracking;
 
-  Local<Object> result = Nan::New<Object>(); // XXX
-  info.GetReturnValue().Set(result);
+    Local<Float32Array> float32Array = Local<Float32Array>::Cast(info[0]);
+    for (unsigned int u = 0; u < 3; u++) {
+      for (unsigned int v = 0; v < 4; u++) {
+        float32Array->Set(u * 4 + v, Number::New(Isolate::GetCurrent(), mDeviceToAbsoluteTracking.m[u][v]));
+      }
+    }
+  }
+
+  info.GetReturnValue().Set(Boolean::New(Isolate::GetCurrent(), bPoseIsValid));
 }
 
 NAN_METHOD(IVRCompositor::Submit)
 {
   IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
-  if (info.Length() != 0)
+  if (info.Length() != 2)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
   }
 
+  if (!info[0]->IsNumber() || !info[1]->IsNumber())
+  {
+    Nan::ThrowError("Expected arguments (number, number).");
+    return;
+  }
+
   vr::EColorSpace colorSpace = vr::ColorSpace_Gamma;
 
-  vr::Texture_t leftEyeTexture = {(void*)leftEyeTex, vr::API_OpenGL, colorSpace};
+  vr::Texture_t leftEyeTexture = {(void*)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t leftEyeTextureBounds = {
     0, 0.5,
     0, 1,
   };
   vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
 
-  vr::Texture_t rightEyeTexture = {(void*)rightEyeTex, vr::API_OpenGL, colorSpace};
+  vr::Texture_t rightEyeTexture = {(void*)info[1]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t rightEyeTextureBounds = {
     0, 0.5,
     0, 1,
