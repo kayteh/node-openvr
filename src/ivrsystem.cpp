@@ -553,7 +553,7 @@ NAN_METHOD(IVRSystem::GetSortedTrackedDeviceIndicesOfClass)
     unRelativeToTrackedDeviceIndex
   );
 
-  info.GetReturnValue().Set(encode(trackedDeviceIndexArray, nDeviceIndices));
+  info.GetReturnValue().Set(encode<(uint32_t)vr::k_unMaxTrackedDeviceCount>(trackedDeviceIndexArray, nDeviceIndices));
 }
 
 //=============================================================================
