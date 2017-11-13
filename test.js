@@ -85,12 +85,20 @@ renderer.vr.enabled = true;
 const display = new FakeVRDisplay();
 renderer.vr.setDevice(display);
 const scene = new THREE.Scene();
-const mesh = new THREE.Mesh();
+const boxMesh = (() => {
+  const geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
+  const material = new THREE.MeshPhongMaterial({
+    color: 0xFF0000,
+  });
+  return new THREE.Mesh(geometry, material);
+})();
+scene.add(boxMesh);
 const camera = new THREE.PerspectiveCamera();
 const _render = () => {
   renderer.render(scene, camera);
 };
 
+const system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
 const waitGetPoses = fn => {
   setTimeout(fn, 1000 / 90);
 };
