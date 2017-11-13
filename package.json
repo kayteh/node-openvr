@@ -1,8 +1,8 @@
 {
-  "name": "openvr",
-  "version": "0.1.0",
-  "description": "Node bindings to OpenVR through headless-gl",
-  "homepage": "https://github.com/psigen/node-openvr#readme",
+  "name": "node-openvr",
+  "version": "0.0.1",
+  "description": "Node bindings to OpenVR",
+  "homepage": "https://github.com/modulesio/node-openvr#readme",
   "license": "MIT",
   "keywords": [
     "glfw",
@@ -12,19 +12,13 @@
     "3d",
     "graphics"
   ],
-  "author": "Pras Velagapudi <psigen@gmail.com>",
-  "maintainers": [
-    {
-      "name": "Pras Velagapudi",
-      "email": "psigen@gmail.com"
-    }
-  ],
+  "author": "Avaer Kazmer <a@modules.io>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/psigen/node-openvr.git"
+    "url": "git+https://github.com/modulesio/node-openvr.git"
   },
   "bugs": {
-    "url": "https://github.com/psigen/node-openvr/issues"
+    "url": "https://github.com/modulesio/node-openvr/issues"
   },
   "main": "index.js",
   "scripts": {
