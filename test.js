@@ -1,11 +1,11 @@
 const THREE = require('three');
 const webgl = require('node-webgl2');
-const ovenvr = require('node-ovenvr');
+const openvr = require('./index.js');
 
 const DEFAULT_USER_HEIGHT = 1.6;
 
-const document = window.webgl.document();
-const canvas = document.createElement('canvas', window.devicePixelRatio * window.innerWidth, window.devicePixelRatio * window.innerHeight);
+const document = webgl.document();
+const canvas = document.createElement('canvas', 1280, 1024);
 canvas.style = {
   width: canvas.width,
   height: canvas.height,
@@ -26,7 +26,27 @@ class FakeVRDisplay {
         ).toArray(),
     };
   }
+  
+  getFrameData(frameData) {
+    console.log('frame data', frameData);
+  }
+  
+  getLayers() {
+    return [
+      {
+        leftBounds: [0, 0, 0.5, 1],
+        rightBounds: [0.5, 0, 0.5, 1],
+        source: null,
+      }
+    ];
+  }
+  
+  submitFrame() {
+    // console.log('submit frame');
+  }
 }
+
+window = global;
 class VRFrameData {
   constructor() {
     this.leftProjectionMatrix = new Float32Array(16);
@@ -53,6 +73,8 @@ class VRPose {
     this.orientation[3] = orientation.w;
   }
 }
+window.VRFrameData = VRFrameData;
+window.addEventListener = () => {};
 
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
@@ -65,7 +87,7 @@ renderer.vr.setDevice(display);
 const scene = new THREE.Scene();
 const mesh = new THREE.Mesh();
 const camera = new THREE.PerspectiveCamera();
-const _render => () => {
+const _render = () => {
   renderer.render(scene, camera);
 };
 
