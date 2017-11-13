@@ -114,7 +114,4 @@ NAN_METHOD(IVRCompositor::Submit)
   vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
 
   vr::VRCompositor()->PostPresentHandoff();
-
-  Local<Object> result = Nan::New<Object>(); // XXX
-  info.GetReturnValue().Set(result);
 }
