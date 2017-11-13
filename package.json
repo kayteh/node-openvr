@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/modulesio/node-openvr/issues"
   },
-  "main": "index.js",
+  "main": "test.js",
   "scripts": {
     "preinstall": "npm install native-openvr-deps",
     "install": "node-gyp rebuild",
@@ -37,20 +37,21 @@
   },
   "dependencies": {
     "bindings": "^1.2.1",
-    "electron": "^1.7.9",
     "nan": "^2.1.0",
-    "native-openvr-deps": "0.0.1",
-    "node-webgl2": "0.0.25"
+    "native-openvr-deps": "0.0.1"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.0",
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
+    "electron": "^1.7.9",
     "eslint": "^3.10.0",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.1.1",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.6.0",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "node-webgl2": "0.0.25",
+    "three": "^0.88.0"
   }
 }
