@@ -37,8 +37,10 @@
   },
   "dependencies": {
     "bindings": "^1.2.1",
+    "electron": "^1.7.9",
     "nan": "^2.1.0",
-    "native-openvr-deps": "0.0.1"
+    "native-openvr-deps": "0.0.1",
+    "node-webgl2": "0.0.25"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.0",
