@@ -23,6 +23,7 @@ NAN_MODULE_INIT(IVRCompositor::Init)
 
   // Assign all the wrapped methods of this object.
   Nan::SetPrototypeMethod(tpl, "WaitGetPoses", WaitGetPoses);
+  Nan::SetPrototypeMethod(tpl, "Submit", Submit);
 
   // Set a static constructor function to reference the `New` function template.
   constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
@@ -82,6 +83,38 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
   bool bPoseIsValid = trackedDevicePose[0].bPoseIsValid;
   vr::HmdMatrix34_t mDeviceToAbsoluteTracking = trackedDevicePose[0].mDeviceToAbsoluteTracking;
 
-  Local<Object> result = Nan::New<Object>();
+  Local<Object> result = Nan::New<Object>(); // XXX
+  info.GetReturnValue().Set(result);
+}
+
+NAN_METHOD(IVRCompositor::Submit)
+{
+  IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
+
+  if (info.Length() != 0)
+  {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  vr::EColorSpace colorSpace = vr::ColorSpace_Gamma;
+
+  vr::Texture_t leftEyeTexture = {(void*)leftEyeTex, vr::API_OpenGL, colorSpace};
+  vr::VRTextureBounds_t leftEyeTextureBounds = {
+    0, 0.5,
+    0, 1,
+  };
+  vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
+
+  vr::Texture_t rightEyeTexture = {(void*)rightEyeTex, vr::API_OpenGL, colorSpace};
+  vr::VRTextureBounds_t rightEyeTextureBounds = {
+    0, 0.5,
+    0, 1,
+  };
+  vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
+
+  vr::VRCompositor()->PostPresentHandoff();
+
+  Local<Object> result = Nan::New<Object>(); // XXX
   info.GetReturnValue().Set(result);
 }
