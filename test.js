@@ -44,18 +44,18 @@ class FakeVRDisplay {
       system.GetEyeToHeadTransform(0, localFloat32Array4);
       localMatrix2.fromArray(localFloat32Array4)
         .premultiply(hmdMatrix)
-        .toArray(frameData.pose.leftViewMatrix);
+        .toArray(frameData.leftViewMatrix);
 
       system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
-      frameData.pose.leftProjectionMatrix.set(localFloat32Array4);
+      frameData.leftProjectionMatrix.set(localFloat32Array4);
 
       system.GetEyeToHeadTransform(1, localFloat32Array4);
       localMatrix2.fromArray(localFloat32Array4)
         .premultiply(hmdMatrix)
-        .toArray(frameData.pose.rightViewMatrixViewMatrix);
+        .toArray(frameData.rightViewMatrixViewMatrix);
 
       system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
-      frameData.pose.rightProjectionMatrix.set(localFloat32Array4);
+      frameData.rightProjectionMatrix.set(localFloat32Array4);
     }
 
     const leftControllerFloat32Array = localFloat32Array2;
