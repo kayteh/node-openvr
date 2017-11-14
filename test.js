@@ -143,6 +143,7 @@ const _initRender = () => {
   camera = new THREE.PerspectiveCamera();
   const _render = () => {
     renderer.render(scene, camera);
+    renderer.context.flush();
 
     requestAnimationFrame(_render);
   };
