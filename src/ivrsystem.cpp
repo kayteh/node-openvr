@@ -335,10 +335,10 @@ NAN_METHOD(IVRSystem::GetEyeToHeadTransform)
       float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
     }
   }
-  float32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-  float32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-  float32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-  float32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+  float32Array->Set(0 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(1 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(2 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(3 * 4 + 3, Number::New(Isolate::GetCurrent(), 1));
 }
 
 //=============================================================================
@@ -508,10 +508,10 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
             hmdFloat32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
           }
         }
-        hmdFloat32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-        hmdFloat32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-        hmdFloat32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-        hmdFloat32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+        hmdFloat32Array->Set(0 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+        hmdFloat32Array->Set(1 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+        hmdFloat32Array->Set(2 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+        hmdFloat32Array->Set(3 * 4 + 3, Number::New(Isolate::GetCurrent(), 1));
       } else if (deviceClass == vr::TrackedDeviceClass_Controller) {
         const vr::ETrackedControllerRole controllerRole = obj->self_->GetControllerRoleForTrackedDeviceIndex(i);
         if (controllerRole == vr::TrackedControllerRole_LeftHand) {
@@ -522,10 +522,10 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
               leftControllerFloat32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
             }
           }
-          leftControllerFloat32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-          leftControllerFloat32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-          leftControllerFloat32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-          leftControllerFloat32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+          leftControllerFloat32Array->Set(0 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+          leftControllerFloat32Array->Set(1 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+          leftControllerFloat32Array->Set(2 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+          leftControllerFloat32Array->Set(3 * 4 + 3, Number::New(Isolate::GetCurrent(), 1));
         } else if (controllerRole == vr::TrackedControllerRole_LeftHand) {
           const vr::HmdMatrix34_t &matrix = trackedDevicePose.mDeviceToAbsoluteTracking;
 
@@ -534,10 +534,10 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
               rightControllerFloat32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
             }
           }
-          rightControllerFloat32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-          rightControllerFloat32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-          rightControllerFloat32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-          rightControllerFloat32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+          rightControllerFloat32Array->Set(0 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+          rightControllerFloat32Array->Set(1 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+          rightControllerFloat32Array->Set(2 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+          rightControllerFloat32Array->Set(3 * 4 + 3, Number::New(Isolate::GetCurrent(), 1));
         }
       }
     }
@@ -584,10 +584,10 @@ NAN_METHOD(IVRSystem::GetSeatedZeroPoseToStandingAbsoluteTrackingPose)
       float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
     }
   }
-  float32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-  float32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-  float32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-  float32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+  float32Array->Set(0 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(1 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(2 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(3 * 4 + 3, Number::New(Isolate::GetCurrent(), 1));
 }
 
 //=============================================================================
