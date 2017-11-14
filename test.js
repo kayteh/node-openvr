@@ -119,8 +119,11 @@ window.requestAnimationFrame = cb => {
   rafCbs.push(cb);
 };
 
+let scene = null;
+let camera = null;
+let renderer = null;
 const _initRender = () => {
-  const renderer = new THREE.WebGLRenderer({
+  renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     context: gl,
     antialias: true,
@@ -128,7 +131,7 @@ const _initRender = () => {
   renderer.vr.enabled = true;
   const display = new FakeVRDisplay();
   renderer.vr.setDevice(display);
-  const scene = new THREE.Scene();
+  scene = new THREE.Scene();
   const boxMesh = (() => {
     const geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
     const material = new THREE.MeshPhongMaterial({
@@ -137,7 +140,7 @@ const _initRender = () => {
     return new THREE.Mesh(geometry, material);
   })();
   scene.add(boxMesh);
-  const camera = new THREE.PerspectiveCamera();
+  camera = new THREE.PerspectiveCamera();
   const _render = () => {
     renderer.render(scene, camera);
 
