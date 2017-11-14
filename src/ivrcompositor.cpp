@@ -98,8 +98,8 @@ NAN_METHOD(IVRCompositor::Submit)
 
   vr::Texture_t leftEyeTexture = {(void*)(size_t)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t leftEyeTextureBounds = {
-    0, 0.5,
-    0, 1,
+    0, 0,
+    0.5, 1,
   };
   vr::EVRCompositorError compositorError = obj->self_->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
   if (compositorError != vr::VRCompositorError_None) {
@@ -120,8 +120,8 @@ NAN_METHOD(IVRCompositor::Submit)
 
   vr::Texture_t rightEyeTexture = {(void*)(size_t)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t rightEyeTextureBounds = {
-    0.5, 1,
-    0, 1,
+    0.5, 0,
+    1, 1,
   };
   compositorError = obj->self_->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
   if (compositorError != vr::VRCompositorError_None) {
