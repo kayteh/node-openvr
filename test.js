@@ -1,4 +1,4 @@
-const THREE = require('three');
+const THREE = require('three-zeo');
 const webgl = require('node-webgl2');
 const openvr = require('./index.js');
 
