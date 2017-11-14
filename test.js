@@ -11,8 +11,6 @@ canvas.style = {
   height: canvas.height,
 };
 const gl = canvas.getContext('webgl');
-const fbos = document.getFBOs();
-let fboIndex = 0;
 
 class FakeVRDisplay {
   constructor() {
@@ -82,7 +80,7 @@ class FakeVRDisplay {
   }
   
   submitFrame() {
-    compositor.Submit(fbos[fboIndex]);
+    compositor.Submit(canvas.tex);
   }
 }
 window = global;
