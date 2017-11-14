@@ -448,7 +448,7 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
 {
   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 2)
+  if (info.Length() != 4)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
@@ -467,21 +467,81 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
     return;
   }
 
-  if (!info[1]->IsNumber())
+  if (!info[1]->IsFloat32Array() || !info[2]->IsFloat32Array() || !info[3]->IsFloat32Array())
   {
-    Nan::ThrowTypeError("Argument[1] must be a number.");
+    Nan::ThrowTypeError("Arguments[1-3] must be Float32Array.");
     return;
   }
 
   vr::ETrackingUniverseOrigin eOrigin = static_cast<vr::ETrackingUniverseOrigin>(nOrigin);
-  float fPredictedSecondsToPhotonsFromNow = static_cast<float>(info[1]->NumberValue());
+  // float fPredictedSecondsToPhotonsFromNow = static_cast<float>(info[1]->NumberValue());
+
+  float fSecondsSinceLastVsync;
+  obj->self_->GetTimeSinceLastVsync( &fSecondsSinceLastVsync, NULL );
+  const float fDisplayFrequency = obj->self_->GetFloatTrackedDeviceProperty( vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_DisplayFrequency_Float );
+  const float fFrameDuration = 1.f / fDisplayFrequency;
+  const float fVsyncToPhotons = obj->self_->GetFloatTrackedDeviceProperty( vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SecondsFromVsyncToPhotons_Float );
+  const float fPredictedSecondsToPhotonsFromNow = fFrameDuration - fSecondsSinceLastVsync + fVsyncToPhotons;
+
   TrackedDevicePoseArray trackedDevicePoseArray;
   obj->self_->GetDeviceToAbsoluteTrackingPose(
     eOrigin, fPredictedSecondsToPhotonsFromNow, trackedDevicePoseArray.data(),
     static_cast<uint32_t>(trackedDevicePoseArray.size())
   );
 
-  info.GetReturnValue().Set(encode(trackedDevicePoseArray));
+  Local<Float32Array> hmdFloat32Array = Local<Float32Array>::Cast(info[1]);
+  Local<Float32Array> leftControllerFloat32Array = Local<Float32Array>::Cast(info[2]);
+  Local<Float32Array> rightControllerFloat32Array = Local<Float32Array>::Cast(info[3]);
+  hmdFloat32Array->Set(0, Number::New(Isolate::GetCurrent(), std::numeric_limits<float>::quiet_NaN()));
+  leftControllerFloat32Array->Set(0, Number::New(Isolate::GetCurrent(), std::numeric_limits<float>::quiet_NaN()));
+  rightControllerFloat32Array->Set(0, Number::New(Isolate::GetCurrent(), std::numeric_limits<float>::quiet_NaN()));
+
+  for (unsigned int i = 0; i < trackedDevicePoseArray.size(); i++) {
+    const vr::TrackedDevicePose_t &trackedDevicePose = trackedDevicePoseArray[i];
+    if (trackedDevicePose.bPoseIsValid) {
+      const vr::ETrackedDeviceClass deviceClass = obj->self_->GetTrackedDeviceClass(i);
+      if (deviceClass == vr::TrackedDeviceClass_HMD) {
+        const vr::HmdMatrix34_t &matrix = trackedDevicePose.mDeviceToAbsoluteTracking;
+
+        for (unsigned int v = 0; v < 4; v++) {
+          for (unsigned int u = 0; u < 3; u++) {
+            hmdFloat32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
+          }
+        }
+        hmdFloat32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+        hmdFloat32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+        hmdFloat32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+        hmdFloat32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+      } else if (deviceClass == vr::TrackedDeviceClass_Controller) {
+        const vr::ETrackedControllerRole controllerRole = obj->self_->GetControllerRoleForTrackedDeviceIndex(i);
+        if (controllerRole == vr::TrackedControllerRole_LeftHand) {
+          const vr::HmdMatrix34_t &matrix = trackedDevicePose.mDeviceToAbsoluteTracking;
+
+          for (unsigned int v = 0; v < 4; v++) {
+            for (unsigned int u = 0; u < 3; u++) {
+              leftControllerFloat32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
+            }
+          }
+          leftControllerFloat32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+          leftControllerFloat32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+          leftControllerFloat32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+          leftControllerFloat32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+        } else if (controllerRole == vr::TrackedControllerRole_LeftHand) {
+          const vr::HmdMatrix34_t &matrix = trackedDevicePose.mDeviceToAbsoluteTracking;
+
+          for (unsigned int v = 0; v < 4; v++) {
+            for (unsigned int u = 0; u < 3; u++) {
+              rightControllerFloat32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
+            }
+          }
+          rightControllerFloat32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+          rightControllerFloat32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+          rightControllerFloat32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+          rightControllerFloat32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
+        }
+      }
+    }
+  }
 }
 
 //=============================================================================
