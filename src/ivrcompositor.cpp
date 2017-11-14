@@ -66,7 +66,7 @@ NAN_METHOD(IVRCompositor::New)
 
 NAN_METHOD(IVRCompositor::WaitGetPoses)
 {
-  // IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
+  IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
   if (info.Length() != 0)
   {
@@ -75,12 +75,12 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
   }
 
   vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
-	vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+	obj->self_->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 }
 
 NAN_METHOD(IVRCompositor::Submit)
 {
-  // IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
+  IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
   if (info.Length() != 1)
   {
@@ -101,14 +101,34 @@ NAN_METHOD(IVRCompositor::Submit)
     0, 0.5,
     0, 1,
   };
-  vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
+  obj->self_->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
 
   vr::Texture_t rightEyeTexture = {(void*)(size_t)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t rightEyeTextureBounds = {
     0.5, 1,
     0, 1,
   };
-  vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
+  obj->self_->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
 
-  vr::VRCompositor()->PostPresentHandoff();
+  obj->self_->PostPresentHandoff();
+}
+
+NAN_METHOD(NewCompositor) {
+  if (info.Length() != 0)
+  {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  // Perform the actual wrapped call.
+  vr::IVRCompositor *compositor = vr::VRCompositor();
+  if (!compositor)
+  {
+    Nan::ThrowError("Unable to initialize VR compositor.");
+    return;
+  }
+
+  // Wrap the resulting system in the correct wrapper and return it.
+  auto result = IVRCompositor::NewInstance(compositor);
+  info.GetReturnValue().Set(result);
 }

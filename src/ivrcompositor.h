@@ -40,4 +40,6 @@ private:
   vr::IVRCompositor * const self_;
 };
 
+NAN_METHOD(NewCompositor);
+
 #endif // NODE_IVRCOMPOSITOR_H

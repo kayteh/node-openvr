@@ -18,6 +18,7 @@ void Initialize(v8::Local<v8::Object> exports) {
   exports->Set(Nan::New("system").ToLocalChecked(), system);
 
   v8::Local<v8::Object> compositor = v8::Object::New(v8::Isolate::GetCurrent());
+  compositor->Set(Nan::New("NewCompositor").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(NewCompositor)->GetFunction());
   IVRCompositor::Init(compositor);
   exports->Set(Nan::New("compositor").ToLocalChecked(), compositor);
 }
