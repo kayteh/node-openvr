@@ -565,14 +565,29 @@ NAN_METHOD(IVRSystem::GetSeatedZeroPoseToStandingAbsoluteTrackingPose)
 {
   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 0)
+  if (info.Length() != 1)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
   }
 
-  vr::HmdMatrix34_t matrix = obj->self_->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
-  info.GetReturnValue().Set(encode(matrix));
+  if (!info[0]->IsFloat32Array())
+  {
+    Nan::ThrowTypeError("Argument[0] must be a Float32Array.");
+    return;
+  }
+
+  const vr::HmdMatrix34_t &matrix = obj->self_->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
+  Local<Float32Array> float32Array = Local<Float32Array>::Cast(info[0]);
+  for (unsigned int v = 0; v < 4; v++) {
+    for (unsigned int u = 0; u < 3; u++) {
+      float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
+    }
+  }
+  float32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
 }
 
 //=============================================================================
