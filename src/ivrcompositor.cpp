@@ -68,38 +68,14 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
 {
   // IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
-  if (info.Length() != 1)
+  if (info.Length() != 0)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
   }
 
-  if (!info[0]->IsFloat32Array() || Local<Float32Array>::Cast(info[0])->Length() != 16)
-  {
-    Nan::ThrowTypeError("Argument[0] must be a Float32Array(16).");
-    return;
-  }
-
   vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 	vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
-
-  bool bPoseIsValid = trackedDevicePose[0].bPoseIsValid;
-  if (bPoseIsValid) {
-    vr::HmdMatrix34_t mDeviceToAbsoluteTracking = trackedDevicePose[0].mDeviceToAbsoluteTracking;
-
-    Local<Float32Array> float32Array = Local<Float32Array>::Cast(info[0]);
-    for (unsigned int v = 0; v < 4; v++) {
-      for (unsigned int u = 0; u < 3; u++) {
-        float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), mDeviceToAbsoluteTracking.m[u][v]));
-      }
-    }
-    float32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-    float32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-    float32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
-    float32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
-  }
-
-  info.GetReturnValue().Set(Boolean::New(Isolate::GetCurrent(), bPoseIsValid));
 }
 
 NAN_METHOD(IVRCompositor::Submit)
