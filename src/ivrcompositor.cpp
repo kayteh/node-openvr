@@ -66,7 +66,7 @@ NAN_METHOD(IVRCompositor::New)
 
 NAN_METHOD(IVRCompositor::WaitGetPoses)
 {
-  IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
+  // IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
   if (info.Length() != 1)
   {
@@ -104,7 +104,7 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
 
 NAN_METHOD(IVRCompositor::Submit)
 {
-  IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
+  // IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
   if (info.Length() != 1)
   {
@@ -120,14 +120,14 @@ NAN_METHOD(IVRCompositor::Submit)
 
   vr::EColorSpace colorSpace = vr::ColorSpace_Gamma;
 
-  vr::Texture_t leftEyeTexture = {(void*)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
+  vr::Texture_t leftEyeTexture = {(void*)(size_t)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t leftEyeTextureBounds = {
     0, 0.5,
     0, 1,
   };
   vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
 
-  vr::Texture_t rightEyeTexture = {(void*)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
+  vr::Texture_t rightEyeTexture = {(void*)(size_t)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t rightEyeTextureBounds = {
     0.5, 1,
     0, 1,
