@@ -30,7 +30,7 @@ class FakeVRDisplay {
   }
   
   getFrameData(frameData) {
-    openvr.system.GetDeviceToAbsoluteTrackingPose(
+    system.GetDeviceToAbsoluteTrackingPose(
       1, // TrackingUniverseStanding
       localFloat32Array, // hmd
       localFloat32Array2, // left controller
@@ -41,20 +41,20 @@ class FakeVRDisplay {
     if (!isNaN(hmdFloat32Array[0])) {
       const hmdMatrix = localMatrix.fromArray(hmdFloat32Array);
 
-      openvr.system.GetEyeToHeadTransform(0, localFloat32Array4);
+      system.GetEyeToHeadTransform(0, localFloat32Array4);
       localMatrix2.fromArray(localFloat32Array4)
         .premultiply(hmdMatrix)
         .toArray(frameData.pose.leftViewMatrix);
 
-      openvr.system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
+      system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
       frameData.pose.leftProjectionMatrix.set(localFloat32Array4);
 
-      openvr.system.GetEyeToHeadTransform(1, localFloat32Array4);
+      system.GetEyeToHeadTransform(1, localFloat32Array4);
       localMatrix2.fromArray(localFloat32Array4)
         .premultiply(hmdMatrix)
         .toArray(frameData.pose.rightViewMatrixViewMatrix);
 
-      openvr.system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
+      system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
       frameData.pose.rightProjectionMatrix.set(localFloat32Array4);
     }
 
@@ -68,7 +68,7 @@ class FakeVRDisplay {
       // XXX
     }
 
-    openvr.system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(this.stageParameters.sittingToStandingTransform);
+    system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(this.stageParameters.sittingToStandingTransform);
   }
   
   getLayers() {
@@ -82,7 +82,7 @@ class FakeVRDisplay {
   }
   
   submitFrame() {
-    openvr.compositor.Submit(fbos[fboIndex]);
+    compositor.Submit(fbos[fboIndex]);
   }
 }
 window = global;
@@ -145,8 +145,11 @@ const _initRender = () => {
   };
   requestAnimationFrame(_render);
 };
+let system = null;
+let compositor = null;
 const _initMainLoop = () => {
-  openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
+  system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
+  compositor = openvr.compositor.NewCompositor();
   process.on('exit', () => {
     openvr.system.VR_Shutdown();
   });
@@ -159,7 +162,7 @@ const _initMainLoop = () => {
   const localMatrix2 = new THREE.Matrix4();
   const _recurse = () => {
     // wait for frame
-    openvr.compositor.WaitGetPoses();
+    compositor.WaitGetPoses();
 
     // flip framebuffer
     document.requestAnimationFrame();
