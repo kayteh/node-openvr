@@ -37,7 +37,7 @@ class FakeVRDisplay {
       .premultiply(hmdMatrix)
       .toArray(frameData.pose.leftViewMatrix);
 
-    system.GetProjectionMatrix(0, localFloat32Array);
+    system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array);
     frameData.pose.leftProjectionMatrix.set(localFloat32Array);
 
     system.GetEyeToHeadTransform(1, localFloat32Array);
@@ -45,7 +45,7 @@ class FakeVRDisplay {
       .premultiply(hmdMatrix)
       .toArray(frameData.pose.rightViewMatrixViewMatrix);
 
-    system.GetProjectionMatrix(1, localFloat32Array);
+    system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array);
     frameData.pose.rightProjectionMatrix.set(localFloat32Array);
   }
   
