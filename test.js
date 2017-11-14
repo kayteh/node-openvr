@@ -30,7 +30,7 @@ class FakeVRDisplay {
   }
   
   getFrameData(frameData) {
-    system.GetDeviceToAbsoluteTrackingPose(
+    openvr.system.GetDeviceToAbsoluteTrackingPose(
       1, // TrackingUniverseStanding
       localFloat32Array, // hmd
       localFloat32Array2, // left controller
@@ -41,20 +41,20 @@ class FakeVRDisplay {
     if (!isNaN(hmdFloat32Array[0])) {
       const hmdMatrix = localMatrix.fromArray(hmdFloat32Array);
 
-      system.GetEyeToHeadTransform(0, localFloat32Array4);
+      openvr.system.GetEyeToHeadTransform(0, localFloat32Array4);
       localMatrix2.fromArray(localFloat32Array4)
         .premultiply(hmdMatrix)
         .toArray(frameData.pose.leftViewMatrix);
 
-      system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
+      openvr.system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
       frameData.pose.leftProjectionMatrix.set(localFloat32Array4);
 
-      system.GetEyeToHeadTransform(1, localFloat32Array4);
+      openvr.system.GetEyeToHeadTransform(1, localFloat32Array4);
       localMatrix2.fromArray(localFloat32Array4)
         .premultiply(hmdMatrix)
         .toArray(frameData.pose.rightViewMatrixViewMatrix);
 
-      system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
+      openvr.system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
       frameData.pose.rightProjectionMatrix.set(localFloat32Array4);
     }
 
@@ -68,7 +68,7 @@ class FakeVRDisplay {
       // XXX
     }
 
-    system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(this.stageParameters.sittingToStandingTransform);
+    openvr.system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(this.stageParameters.sittingToStandingTransform);
   }
   
   getLayers() {
@@ -146,7 +146,11 @@ const _initRender = () => {
   requestAnimationFrame(_render);
 };
 const _initMainLoop = () => {
-  const system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
+  openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
+  process.on('exit', () => {
+    openvr.system.VR_Shutdown();
+  });
+
   const localFloat32Array = new Float32Array(16);
   const localFloat32Array2 = new Float32Array(16);
   const localFloat32Array3 = new Float32Array(16);
@@ -155,7 +159,7 @@ const _initMainLoop = () => {
   const localMatrix2 = new THREE.Matrix4();
   const _recurse = () => {
     // wait for frame
-    openvr.system.WaitGetPoses();
+    openvr.compositor.WaitGetPoses();
 
     // flip framebuffer
     document.requestAnimationFrame();
