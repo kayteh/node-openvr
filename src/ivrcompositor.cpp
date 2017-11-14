@@ -101,14 +101,44 @@ NAN_METHOD(IVRCompositor::Submit)
     0, 0.5,
     0, 1,
   };
-  obj->self_->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
+  vr::EVRCompositorError compositorError = obj->self_->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
+  if (compositorError != vr::VRCompositorError_None) {
+    if (compositorError == vr::VRCompositorError_RequestFailed) Nan::ThrowError("Compositor error: VRCompositorError_RequestFailed");
+    else if (compositorError == vr::VRCompositorError_IncompatibleVersion) Nan::ThrowError("Compositor error: VRCompositorError_IncompatibleVersion");
+    else if (compositorError == vr::VRCompositorError_DoNotHaveFocus) Nan::ThrowError("Compositor error: VRCompositorError_DoNotHaveFocus");
+    else if (compositorError == vr::VRCompositorError_InvalidTexture) Nan::ThrowError("Compositor error: VRCompositorError_InvalidTexture");
+    else if (compositorError == vr::VRCompositorError_IsNotSceneApplication) Nan::ThrowError("Compositor error: VRCompositorError_IsNotSceneApplication");
+    else if (compositorError == vr::VRCompositorError_TextureIsOnWrongDevice) Nan::ThrowError("Compositor error: VRCompositorError_TextureIsOnWrongDevice");
+    else if (compositorError == vr::VRCompositorError_TextureUsesUnsupportedFormat) Nan::ThrowError("Compositor error: VRCompositorError_TextureUsesUnsupportedFormat");
+    else if (compositorError == vr::VRCompositorError_SharedTexturesNotSupported) Nan::ThrowError("Compositor error: VRCompositorError_SharedTexturesNotSupported");
+    else if (compositorError == vr::VRCompositorError_IndexOutOfRange) Nan::ThrowError("Compositor error: VRCompositorError_IndexOutOfRange");
+    else if (compositorError == vr::VRCompositorError_AlreadySubmitted) Nan::ThrowError("Compositor error: VRCompositorError_AlreadySubmitted");
+    else if (compositorError == vr::VRCompositorError_InvalidBounds) Nan::ThrowError("Compositor error: VRCompositorError_InvalidBounds");
+    else Nan::ThrowError("Compositor error: unknown");
+    return;
+  }
 
   vr::Texture_t rightEyeTexture = {(void*)(size_t)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t rightEyeTextureBounds = {
     0.5, 1,
     0, 1,
   };
-  obj->self_->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
+  compositorError = obj->self_->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
+  if (compositorError != vr::VRCompositorError_None) {
+    if (compositorError == vr::VRCompositorError_RequestFailed) Nan::ThrowError("Compositor error: VRCompositorError_RequestFailed");
+    else if (compositorError == vr::VRCompositorError_IncompatibleVersion) Nan::ThrowError("Compositor error: VRCompositorError_IncompatibleVersion");
+    else if (compositorError == vr::VRCompositorError_DoNotHaveFocus) Nan::ThrowError("Compositor error: VRCompositorError_DoNotHaveFocus");
+    else if (compositorError == vr::VRCompositorError_InvalidTexture) Nan::ThrowError("Compositor error: VRCompositorError_InvalidTexture");
+    else if (compositorError == vr::VRCompositorError_IsNotSceneApplication) Nan::ThrowError("Compositor error: VRCompositorError_IsNotSceneApplication");
+    else if (compositorError == vr::VRCompositorError_TextureIsOnWrongDevice) Nan::ThrowError("Compositor error: VRCompositorError_TextureIsOnWrongDevice");
+    else if (compositorError == vr::VRCompositorError_TextureUsesUnsupportedFormat) Nan::ThrowError("Compositor error: VRCompositorError_TextureUsesUnsupportedFormat");
+    else if (compositorError == vr::VRCompositorError_SharedTexturesNotSupported) Nan::ThrowError("Compositor error: VRCompositorError_SharedTexturesNotSupported");
+    else if (compositorError == vr::VRCompositorError_IndexOutOfRange) Nan::ThrowError("Compositor error: VRCompositorError_IndexOutOfRange");
+    else if (compositorError == vr::VRCompositorError_AlreadySubmitted) Nan::ThrowError("Compositor error: VRCompositorError_AlreadySubmitted");
+    else if (compositorError == vr::VRCompositorError_InvalidBounds) Nan::ThrowError("Compositor error: VRCompositorError_InvalidBounds");
+    else Nan::ThrowError("Compositor error: unknown");
+    return;
+  }
 
   obj->self_->PostPresentHandoff();
 }
