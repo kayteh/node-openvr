@@ -51,7 +51,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.6.0",
     "mocha": "^3.2.0",
-    "node-webgl2": "0.0.28",
+    "node-webgl2": "0.0.29",
     "three": "^0.88.0"
   }
 }
