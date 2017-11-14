@@ -148,7 +148,7 @@ NAN_METHOD(IVRSystem::GetProjectionMatrix)
 {
   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 3)
+  if (info.Length() != 4)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
@@ -179,12 +179,23 @@ NAN_METHOD(IVRSystem::GetProjectionMatrix)
     return;
   }
 
+  if (!info[3]->IsFloat32Array())
+  {
+    Nan::ThrowTypeError("Argument[3] must be a Float32Array.");
+    return;
+  }
+
   vr::EVREye eEye = static_cast<vr::EVREye>(nEye);
   float fNearZ = static_cast<float>(info[1]->NumberValue());
   float fFarZ = static_cast<float>(info[2]->NumberValue());
   vr::HmdMatrix44_t matrix = obj->self_->GetProjectionMatrix(eEye, fNearZ, fFarZ);
 
-  info.GetReturnValue().Set(encode(matrix));
+  Local<Float32Array> float32Array = Local<Float32Array>::Cast(info[3]);
+  for (unsigned int v = 0; v < 4; v++) {
+    for (unsigned int u = 0; u < 4; u++) {
+      float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
+    }
+  }
 }
 
 //=============================================================================
@@ -290,7 +301,7 @@ NAN_METHOD(IVRSystem::GetEyeToHeadTransform)
 {
   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 1)
+  if (info.Length() != 2)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
@@ -299,6 +310,12 @@ NAN_METHOD(IVRSystem::GetEyeToHeadTransform)
   if (!info[0]->IsNumber())
   {
     Nan::ThrowTypeError("Argument[0] must be a number (EVREye).");
+    return;
+  }
+
+  if (!info[1]->IsFloat32Array())
+  {
+    Nan::ThrowTypeError("Argument[1] must be a Float32Array.");
     return;
   }
 
@@ -312,7 +329,16 @@ NAN_METHOD(IVRSystem::GetEyeToHeadTransform)
   vr::EVREye eEye = static_cast<vr::EVREye>(nEye);
   vr::HmdMatrix34_t matrix = obj->self_->GetEyeToHeadTransform(eEye);
 
-  info.GetReturnValue().Set(encode(matrix));
+  Local<Float32Array> float32Array = Local<Float32Array>::Cast(info[1]);
+  for (unsigned int v = 0; v < 4; v++) {
+    for (unsigned int u = 0; u < 3; u++) {
+      float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), matrix.m[u][v]));
+    }
+  }
+  float32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+  float32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
 }
 
 //=============================================================================

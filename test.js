@@ -4,6 +4,8 @@ const openvr = require('./index.js');
 
 const DEFAULT_USER_HEIGHT = 1.6;
 
+const fbos = webgl.getFBOs();
+let fboIndex = 0;
 const document = webgl.document();
 const canvas = document.createElement('canvas', 1280, 1024);
 canvas.style = {
@@ -28,7 +30,23 @@ class FakeVRDisplay {
   }
   
   getFrameData(frameData) {
-    console.log('frame data', frameData);
+    const hmdMatrix = localMatrix.fromArray(hmdFloat32Array);
+
+    system.GetEyeToHeadTransform(0, localFloat32Array);
+    localMatrix2.fromArray(localFloat32Array)
+      .premultiply(hmdMatrix)
+      .toArray(frameData.pose.leftViewMatrix);
+
+    system.GetProjectionMatrix(0, localFloat32Array);
+    frameData.pose.leftProjectionMatrix.set(localFloat32Array);
+
+    system.GetEyeToHeadTransform(1, localFloat32Array);
+    localMatrix2.fromArray(localFloat32Array)
+      .premultiply(hmdMatrix)
+      .toArray(frameData.pose.rightViewMatrixViewMatrix);
+
+    system.GetProjectionMatrix(1, localFloat32Array);
+    frameData.pose.rightProjectionMatrix.set(localFloat32Array);
   }
   
   getLayers() {
@@ -99,14 +117,18 @@ const _render = () => {
 };
 
 const system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
-const waitGetPoses = fn => {
-  setTimeout(fn, 1000 / 90);
-};
+const hmdFloat32Array = new Float32Array(16);
+const localFloat32Array = new Float32Array(16);
+const localMatrix = new THREE.Matrix4();
+const localMatrix2 = new THREE.Matrix4();
 const _recurse = () => {
+  openvr.system.WaitGetPoses(hmdFloat32Array);
+
   document.requestAnimationFrame();
+  fboIndex = (fboIndex + 1) % 2;
 
   _render();
 
-  waitGetPoses(_recurse);
+  openvr.compositor.Submit(fbos[fboIndex]);
 };
 _recurse();

@@ -88,11 +88,15 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
     vr::HmdMatrix34_t mDeviceToAbsoluteTracking = trackedDevicePose[0].mDeviceToAbsoluteTracking;
 
     Local<Float32Array> float32Array = Local<Float32Array>::Cast(info[0]);
-    for (unsigned int u = 0; u < 3; u++) {
-      for (unsigned int v = 0; v < 4; u++) {
-        float32Array->Set(u * 4 + v, Number::New(Isolate::GetCurrent(), mDeviceToAbsoluteTracking.m[u][v]));
+    for (unsigned int v = 0; v < 4; v++) {
+      for (unsigned int u = 0; u < 3; u++) {
+        float32Array->Set(v * 4 + u, Number::New(Isolate::GetCurrent(), mDeviceToAbsoluteTracking.m[u][v]));
       }
     }
+    float32Array->Set(0 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+    float32Array->Set(1 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+    float32Array->Set(2 * 4 + 4, Number::New(Isolate::GetCurrent(), 0));
+    float32Array->Set(3 * 4 + 4, Number::New(Isolate::GetCurrent(), 1));
   }
 
   info.GetReturnValue().Set(Boolean::New(Isolate::GetCurrent(), bPoseIsValid));
@@ -102,15 +106,15 @@ NAN_METHOD(IVRCompositor::Submit)
 {
   IVRCompositor* obj = ObjectWrap::Unwrap<IVRCompositor>(info.Holder());
 
-  if (info.Length() != 2)
+  if (info.Length() != 1)
   {
     Nan::ThrowError("Wrong number of arguments.");
     return;
   }
 
-  if (!info[0]->IsNumber() || !info[1]->IsNumber())
+  if (!info[0]->IsNumber())
   {
-    Nan::ThrowError("Expected arguments (number, number).");
+    Nan::ThrowError("Expected arguments (number).");
     return;
   }
 
@@ -123,9 +127,9 @@ NAN_METHOD(IVRCompositor::Submit)
   };
   vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &leftEyeTextureBounds);
 
-  vr::Texture_t rightEyeTexture = {(void*)info[1]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
+  vr::Texture_t rightEyeTexture = {(void*)info[0]->Int32Value(), vr::TextureType_OpenGL, colorSpace};
   vr::VRTextureBounds_t rightEyeTextureBounds = {
-    0, 0.5,
+    0.5, 1,
     0, 1,
   };
   vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &rightEyeTextureBounds);
