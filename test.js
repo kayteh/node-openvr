@@ -168,10 +168,6 @@ const _initMainLoop = () => {
     // wait for frame
     compositor.WaitGetPoses();
 
-    // flip framebuffer
-    document.requestAnimationFrame();
-    fboIndex = (fboIndex + 1) % 2;
-
     // raf callbacks
     const oldRafCbs = rafCbs;
     rafCbs = [];
