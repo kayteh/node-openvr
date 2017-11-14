@@ -147,6 +147,12 @@ const _initRender = () => {
 };
 let system = null;
 let compositor = null;
+const localFloat32Array = new Float32Array(16);
+const localFloat32Array2 = new Float32Array(16);
+const localFloat32Array3 = new Float32Array(16);
+const localFloat32Array4 = new Float32Array(16);
+const localMatrix = new THREE.Matrix4();
+const localMatrix2 = new THREE.Matrix4();
 const _initMainLoop = () => {
   system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
   compositor = openvr.compositor.NewCompositor();
@@ -154,12 +160,6 @@ const _initMainLoop = () => {
     openvr.system.VR_Shutdown();
   });
 
-  const localFloat32Array = new Float32Array(16);
-  const localFloat32Array2 = new Float32Array(16);
-  const localFloat32Array3 = new Float32Array(16);
-  const localFloat32Array4 = new Float32Array(16);
-  const localMatrix = new THREE.Matrix4();
-  const localMatrix2 = new THREE.Matrix4();
   const _recurse = () => {
     // wait for frame
     compositor.WaitGetPoses();
