@@ -25,28 +25,50 @@ class FakeVRDisplay {
           new THREE.Vector3(0, DEFAULT_USER_HEIGHT, 0),
           new THREE.Quaternion(),
           new THREE.Vector3(1, 1, 1)
-        ).toArray(),
+        ).toArray(new Float32Array(16)),
     };
   }
   
   getFrameData(frameData) {
-    const hmdMatrix = localMatrix.fromArray(hmdFloat32Array);
+    system.GetDeviceToAbsoluteTrackingPose(
+      1, // TrackingUniverseStanding
+      localFloat32Array, // hmd
+      localFloat32Array2, // left controller
+      localFloat32Array3, // right controller
+    );
 
-    system.GetEyeToHeadTransform(0, localFloat32Array);
-    localMatrix2.fromArray(localFloat32Array)
-      .premultiply(hmdMatrix)
-      .toArray(frameData.pose.leftViewMatrix);
+    const hmdFloat32Array = localFloat32Array;
+    if (!isNaN(hmdFloat32Array[0])) {
+      const hmdMatrix = localMatrix.fromArray(hmdFloat32Array);
 
-    system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array);
-    frameData.pose.leftProjectionMatrix.set(localFloat32Array);
+      system.GetEyeToHeadTransform(0, localFloat32Array4);
+      localMatrix2.fromArray(localFloat32Array4)
+        .premultiply(hmdMatrix)
+        .toArray(frameData.pose.leftViewMatrix);
 
-    system.GetEyeToHeadTransform(1, localFloat32Array);
-    localMatrix2.fromArray(localFloat32Array)
-      .premultiply(hmdMatrix)
-      .toArray(frameData.pose.rightViewMatrixViewMatrix);
+      system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
+      frameData.pose.leftProjectionMatrix.set(localFloat32Array4);
 
-    system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array);
-    frameData.pose.rightProjectionMatrix.set(localFloat32Array);
+      system.GetEyeToHeadTransform(1, localFloat32Array4);
+      localMatrix2.fromArray(localFloat32Array4)
+        .premultiply(hmdMatrix)
+        .toArray(frameData.pose.rightViewMatrixViewMatrix);
+
+      system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
+      frameData.pose.rightProjectionMatrix.set(localFloat32Array4);
+    }
+
+    const leftControllerFloat32Array = localFloat32Array2;
+    if (!isNaN(leftControllerFloat32Array[0])) {
+      // XXX
+    }
+
+    const rightControllerFloat32Array = localFloat32Array3;
+    if (!isNaN(rightControllerFloat32Array[0])) {
+      // XXX
+    }
+
+    system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(this.stageParameters.sittingToStandingTransform);
   }
   
   getLayers() {
@@ -60,10 +82,9 @@ class FakeVRDisplay {
   }
   
   submitFrame() {
-    // console.log('submit frame');
+    openvr.compositor.Submit(fbos[fboIndex]);
   }
 }
-
 window = global;
 class VRFrameData {
   constructor() {
@@ -93,42 +114,65 @@ class VRPose {
 }
 window.VRFrameData = VRFrameData;
 window.addEventListener = () => {};
+let rafCbs = [];
+window.requestAnimationFrame = cb => {
+  rafCbs.push(cb);
+};
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  context: gl,
-  antialias: true,
-});
-renderer.vr.enabled = true;
-const display = new FakeVRDisplay();
-renderer.vr.setDevice(display);
-const scene = new THREE.Scene();
-const boxMesh = (() => {
-  const geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
-  const material = new THREE.MeshPhongMaterial({
-    color: 0xFF0000,
+const _initRender = () => {
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    context: gl,
+    antialias: true,
   });
-  return new THREE.Mesh(geometry, material);
-})();
-scene.add(boxMesh);
-const camera = new THREE.PerspectiveCamera();
-const _render = () => {
-  renderer.render(scene, camera);
+  renderer.vr.enabled = true;
+  const display = new FakeVRDisplay();
+  renderer.vr.setDevice(display);
+  const scene = new THREE.Scene();
+  const boxMesh = (() => {
+    const geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xFF0000,
+    });
+    return new THREE.Mesh(geometry, material);
+  })();
+  scene.add(boxMesh);
+  const camera = new THREE.PerspectiveCamera();
+  const _render = () => {
+    renderer.render(scene, camera);
+
+    requestAnimationFrame(_render);
+  };
+  requestAnimationFrame(_render);
+};
+const _initMainLoop = () => {
+  const system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
+  const localFloat32Array = new Float32Array(16);
+  const localFloat32Array2 = new Float32Array(16);
+  const localFloat32Array3 = new Float32Array(16);
+  const localFloat32Array4 = new Float32Array(16);
+  const localMatrix = new THREE.Matrix4();
+  const localMatrix2 = new THREE.Matrix4();
+  const _recurse = () => {
+    // wait for frame
+    openvr.system.WaitGetPoses();
+
+    // flip framebuffer
+    document.requestAnimationFrame();
+    fboIndex = (fboIndex + 1) % 2;
+
+    // raf callbacks
+    const oldRafCbs = rafCbs;
+    rafCbs = [];
+    for (let i = 0; i < oldRafCbs.length; i++) {
+      oldRafCbs[i]();
+    }
+
+    // recurse
+    _recurse();
+  };
+  _recurse();
 };
 
-const system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
-const hmdFloat32Array = new Float32Array(16);
-const localFloat32Array = new Float32Array(16);
-const localMatrix = new THREE.Matrix4();
-const localMatrix2 = new THREE.Matrix4();
-const _recurse = () => {
-  openvr.system.WaitGetPoses(hmdFloat32Array);
-
-  document.requestAnimationFrame();
-  fboIndex = (fboIndex + 1) % 2;
-
-  _render();
-
-  openvr.compositor.Submit(fbos[fboIndex]);
-};
-_recurse();
+_initRender();
+_initMainLoop();
