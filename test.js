@@ -4,8 +4,6 @@ const openvr = require('./index.js');
 
 const DEFAULT_USER_HEIGHT = 1.6;
 
-const fbos = webgl.getFBOs();
-let fboIndex = 0;
 const document = webgl.document();
 const canvas = document.createElement('canvas', 1280, 1024);
 canvas.style = {
@@ -13,6 +11,8 @@ canvas.style = {
   height: canvas.height,
 };
 const gl = canvas.getContext('webgl');
+const fbos = document.getFBOs();
+let fboIndex = 0;
 
 class FakeVRDisplay {
   constructor() {
