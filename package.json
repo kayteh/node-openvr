@@ -1,6 +1,6 @@
 {
   "name": "node-openvr",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Node bindings to OpenVR",
   "homepage": "https://github.com/modulesio/node-openvr#readme",
   "license": "MIT",
