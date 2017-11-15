@@ -28,13 +28,6 @@ class FakeVRDisplay {
   }
 
   getFrameData(frameData) {
-    /* system.GetDeviceToAbsoluteTrackingPose(
-      1, // TrackingUniverseStanding
-      localFloat32Array, // hmd
-      localFloat32Array2, // left controller
-      localFloat32Array3, // right controller
-    ); */
-
     const hmdMatrix = localMatrix.fromArray(localFloat32Array);
     hmdMatrix.getInverse(hmdMatrix);
 
@@ -60,12 +53,12 @@ class FakeVRDisplay {
     frameData.rightProjectionMatrix.set(localFloat32Array4);
 
     // localFloat32Array2
-    
+
     system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(localFloat32Array4);
     _normalizeMatrixArray(localFloat32Array4);
     this.stageParameters.sittingToStandingTransform.set(localFloat32Array4);
   }
-  
+
   getLayers() {
     return [
       {
@@ -75,8 +68,10 @@ class FakeVRDisplay {
       }
     ];
   }
-  
+
   submitFrame() {
+    document.blitFrameBuffer(msFbo, fbo, canvas.width, canvas.height, canvas.width, canvas.height);
+
     compositor.Submit(texture);
   }
 }
@@ -158,6 +153,9 @@ const _initRender = () => {
 };
 let system = null;
 let compositor = null;
+let msFbo = null;
+let msTexture = null;
+let fbo = null;
 let texture = null;
 const zeroMatrix = new THREE.Matrix4();
 const localFloat32Array = new Float32Array(16);
@@ -181,7 +179,11 @@ const _initMainLoop = () => {
   const {width: halfWidth, height} = system.GetRecommendedRenderTargetSize();
   const width = halfWidth * 2;
   renderer.setSize(width, height);
-  const [fbo, tex] = document.getRenderTarget(width, height, document.samples);
+  const [msFb, msTex] = document.getRenderTarget(width, height, document.samples);
+  msFbo = msFb;
+  msTexture = msTex;
+  const [fb, tex] = document.getRenderTarget(width, height, 1);
+  fbo = fb;
   texture = tex;
 
   const _recurse = () => {
@@ -196,7 +198,7 @@ const _initMainLoop = () => {
     _normalizeMatrixArray(localFloat32Array2);
     _normalizeMatrixArray(localFloat32Array3);
 
-    document.bindFrameBuffer(fbo);
+    document.bindFrameBuffer(msFbo);
 
     // raf callbacks
     const oldRafCbs = rafCbs;
@@ -205,7 +207,7 @@ const _initMainLoop = () => {
       oldRafCbs[i]();
     }
 
-    document.blitFrameBuffer(fbo, 0, canvas.width, canvas.height, canvas.width, canvas.height);
+    document.blitFrameBuffer(msFbo, 0, canvas.width, canvas.height, canvas.width, canvas.height);
     document.flip();
 
     // recurse
