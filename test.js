@@ -28,61 +28,41 @@ class FakeVRDisplay {
   }
 
   getFrameData(frameData) {
-    system.GetDeviceToAbsoluteTrackingPose(
+    /* system.GetDeviceToAbsoluteTrackingPose(
       1, // TrackingUniverseStanding
       localFloat32Array, // hmd
       localFloat32Array2, // left controller
       localFloat32Array3, // right controller
-    );
+    ); */
 
-    if (isNaN(localFloat32Array[0])) {
-      zeroMatrix.toArray(localFloat32Array);
-    }
     const hmdMatrix = localMatrix.fromArray(localFloat32Array);
     hmdMatrix.getInverse(hmdMatrix);
 
     system.GetEyeToHeadTransform(0, localFloat32Array4);
-    if (isNaN(localFloat32Array4[0])) {
-      zeroMatrix.toArray(localFloat32Array4);
-    }
     localMatrix2.fromArray(localFloat32Array4)
       .getInverse(localMatrix2)
       .multiply(hmdMatrix)
       .toArray(frameData.leftViewMatrix);
 
     system.GetProjectionMatrix(0, camera.near, camera.far, localFloat32Array4);
-    if (isNaN(localFloat32Array4[0])) {
-      zeroMatrix.toArray(localFloat32Array4);
-    }
+    _normalizeMatrixArray(localFloat32Array4);
     frameData.leftProjectionMatrix.set(localFloat32Array4);
 
     system.GetEyeToHeadTransform(1, localFloat32Array4);
-    if (isNaN(localFloat32Array4[0])) {
-      zeroMatrix.toArray(localFloat32Array4);
-    }
+    _normalizeMatrixArray(localFloat32Array4);
     localMatrix2.fromArray(localFloat32Array4)
       .getInverse(localMatrix2)
       .multiply(hmdMatrix)
       .toArray(frameData.rightViewMatrix);
 
     system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
-    if (isNaN(localFloat32Array4[0])) {
-      zeroMatrix.toArray(localFloat32Array4);
-    }
+    _normalizeMatrixArray(localFloat32Array4);
     frameData.rightProjectionMatrix.set(localFloat32Array4);
 
-    if (isNaN(localFloat32Array2[0])) { // XXX
-      zeroMatrix.toArray(localFloat32Array2);
-    }
-
-    if (isNaN(localFloat32Array3[0])) { // XXX
-      zeroMatrix.toArray(localFloat32Array3);
-    }
+    // localFloat32Array2
     
     system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(localFloat32Array4);
-    if (isNaN(localFloat32Array4[0])) {
-      zeroMatrix.toArray(localFloat32Array4);
-    }
+    _normalizeMatrixArray(localFloat32Array4);
     this.stageParameters.sittingToStandingTransform.set(localFloat32Array4);
   }
   
@@ -186,6 +166,11 @@ const localFloat32Array3 = new Float32Array(16);
 const localFloat32Array4 = new Float32Array(16);
 const localMatrix = new THREE.Matrix4();
 const localMatrix2 = new THREE.Matrix4();
+const _normalizeMatrixArray = float32Array => {
+  if (isNaN(float32Array[0])) {
+    zeroMatrix.toArray(float32Array);
+  }
+};
 const _initMainLoop = () => {
   system = openvr.system.VR_Init(openvr.EVRApplicationType.Scene);
   compositor = openvr.compositor.NewCompositor();
@@ -201,7 +186,15 @@ const _initMainLoop = () => {
 
   const _recurse = () => {
     // wait for frame
-    compositor.WaitGetPoses();
+    compositor.WaitGetPoses(
+      system,
+      localFloat32Array, // hmd
+      localFloat32Array2, // left controller
+      localFloat32Array3 // right controller
+    );
+    _normalizeMatrixArray(localFloat32Array);
+    _normalizeMatrixArray(localFloat32Array2);
+    _normalizeMatrixArray(localFloat32Array3);
 
     document.bindFrameBuffer(fbo);
 

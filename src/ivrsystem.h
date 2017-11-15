@@ -128,6 +128,8 @@ private:
 
   /// Reference to wrapped OpenVR instance.
   vr::IVRSystem * const self_;
+
+  friend class IVRCompositor;
 };
 
 #endif // NODE_IVRSYSTEM_H
