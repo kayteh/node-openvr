@@ -474,7 +474,6 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
   }
 
   vr::ETrackingUniverseOrigin eOrigin = static_cast<vr::ETrackingUniverseOrigin>(nOrigin);
-  // float fPredictedSecondsToPhotonsFromNow = static_cast<float>(info[1]->NumberValue());
 
   float fSecondsSinceLastVsync;
   obj->self_->GetTimeSinceLastVsync( &fSecondsSinceLastVsync, NULL );
