@@ -26,7 +26,7 @@ class FakeVRDisplay {
         ).toArray(new Float32Array(16)),
     };
   }
-  
+
   getFrameData(frameData) {
     system.GetDeviceToAbsoluteTrackingPose(
       1, // TrackingUniverseStanding
@@ -149,7 +149,7 @@ const _initRender = () => {
   const display = new FakeVRDisplay();
   renderer.vr.setDevice(display);
   scene = new THREE.Scene();
-  
+
   const boxMesh = (() => {
     const geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
     const material = new THREE.MeshPhongMaterial({
@@ -158,16 +158,16 @@ const _initRender = () => {
     return new THREE.Mesh(geometry, material);
   })();
   scene.add(boxMesh);
-  
+
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
   directionalLight.position.set(1, 1, 1);
   scene.add(directionalLight);
-  
+
   camera = new THREE.PerspectiveCamera(90, canvas.width/canvas.height, 0.1, 1000);
   camera.position.set(0, 0, 1);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
   scene.add(camera);
-  
+
   const _render = () => {
     renderer.render(scene, camera);
     renderer.context.flush();
@@ -204,7 +204,7 @@ const _initMainLoop = () => {
     compositor.WaitGetPoses();
 
     document.bindFrameBuffer(fbo);
-    
+
     // raf callbacks
     const oldRafCbs = rafCbs;
     rafCbs = [];
