@@ -5,7 +5,7 @@ const openvr = require('./index.js');
 const DEFAULT_USER_HEIGHT = 1.6;
 
 const document = webgl.document();
-const canvas = document.createElement('canvas', 1280, 1024);
+const canvas = document.createElement('canvas', 1280, 1024, 4);
 canvas.style = {
   width: canvas.width,
   height: canvas.height,
@@ -181,7 +181,7 @@ const _initMainLoop = () => {
   const {width: halfWidth, height} = system.GetRecommendedRenderTargetSize();
   const width = halfWidth * 2;
   renderer.setSize(width, height);
-  const [fbo, tex] = document.getFrameBufferTexture(width, height, document.samples);
+  const [fbo, tex] = document.getRenderTarget(width, height, document.samples);
   texture = tex;
 
   const _recurse = () => {
