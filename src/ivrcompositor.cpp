@@ -118,7 +118,7 @@ NAN_METHOD(IVRCompositor::WaitGetPoses)
           leftControllerFloat32Array->Set(1 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
           leftControllerFloat32Array->Set(2 * 4 + 3, Number::New(Isolate::GetCurrent(), 0));
           leftControllerFloat32Array->Set(3 * 4 + 3, Number::New(Isolate::GetCurrent(), 1));
-        } else if (controllerRole == vr::TrackedControllerRole_LeftHand) {
+        } else if (controllerRole == vr::TrackedControllerRole_RightHand) {
           const vr::HmdMatrix34_t &matrix = trackedDevicePose.mDeviceToAbsoluteTracking;
 
           for (unsigned int v = 0; v < 4; v++) {
