@@ -339,7 +339,7 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
           rightGamepad.buttons[2].pressed = localGamepadArray[3] !== 0; // grip
           rightGamepad.buttons[3].pressed = localGamepadArray[2] !== 0; // menu
 
-          rightGamepad.buttons[0].touched = localGamepadArray[9] !==> 0; // pad
+          rightGamepad.buttons[0].touched = localGamepadArray[9] !== 0; // pad
           rightGamepad.buttons[1].touched = localGamepadArray[10] !== 0; // trigger
           rightGamepad.buttons[2].touched = localGamepadArray[8] !== 0; // grip
           rightGamepad.buttons[3].touched = localGamepadArray[7] !== 0; // menu
