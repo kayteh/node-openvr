@@ -44,7 +44,6 @@
     "babel-eslint": "^7.1.0",
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
-    "electron": "^1.7.9",
     "eslint": "^3.10.0",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.1.1",
