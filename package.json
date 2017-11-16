@@ -53,7 +53,7 @@
     "eslint-plugin-react": "^6.6.0",
     "jimp": "^0.2.28",
     "mocha": "^3.2.0",
-    "node-webgl2": "0.0.40",
+    "node-webgl2": "0.0.41",
     "three-zeo": "0.0.12"
   }
 }

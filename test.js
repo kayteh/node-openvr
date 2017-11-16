@@ -351,6 +351,8 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
           gamepads.push(rightGamepad);
         }
 
+        platform.pollEvents();
+
         platform.bindFrameBuffer(msFbo);
 
         // raf callbacks
