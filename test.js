@@ -60,6 +60,10 @@ window.document = {
     }
   },
 };
+let gamepads = [];
+window.navigator = {
+  getGamepads: () => gamepads,
+};
 window.addEventListener = () => {};
 let rafCbs = [];
 window.requestAnimationFrame = cb => {
@@ -151,6 +155,7 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
         this.pose = new VRPose();
       }
     }
+    window.VRFrameData = VRFrameData;
     class VRPose {
       constructor(position = new Float32Array(3), orientation = new Float32Array(4)) {
         this.position = position;
@@ -168,7 +173,36 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
         this.orientation[3] = orientation.w;
       }
     }
-    window.VRFrameData = VRFrameData;
+    class VRGamepadButton {
+      constructor() {
+         this.value = 0;
+         this.pressed = false;
+         this.touched = false;
+      }
+    }
+    class VRGamepad {
+      constructor(hand, index) {
+        this.hand = hand;
+        this.index = index;
+        this.connected = true;
+        this.buttons = [
+          new VRGamepadButton(),
+          new VRGamepadButton(),
+          new VRGamepadButton(),
+          new VRGamepadButton(),
+        ];
+        this.hasPosition = true;
+        this.hasOrientation = true;
+        this.position = new Float32Array(3);
+        this.linearVelocity = new Float32Array(3);
+        this.linearAcceleration = new Float32Array(3);
+        this.orientation = Float32Array.from([0, 0, 0, 1]);
+        this.angularVelocity = new Float32Array(3);
+        this.angularAcceleration = new Float32Array(3);
+      }
+    }
+    const leftGamepad = new VRGamepad('left', 0);
+    const rightGamepad = new VRGamepad('right', 1);
 
     let scene = null;
     let camera = null;
@@ -240,6 +274,7 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
     const localFloat32Array2 = new Float32Array(16);
     const localFloat32Array3 = new Float32Array(16);
     const localFloat32Array4 = new Float32Array(16);
+    const localGamepadArray = new Float32Array(13);
     const localVector = new THREE.Vector3();
     const localVector2 = new THREE.Vector3();
     const localQuaternion = new THREE.Quaternion();
@@ -278,6 +313,42 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
         _normalizeMatrixArray(localFloat32Array);
         _normalizeMatrixArray(localFloat32Array2);
         _normalizeMatrixArray(localFloat32Array3);
+
+        gamepads.length = 0;
+        system.GetControllerState(0, localGamepadArray);
+        if (!isNaN(localGamepadArray[0])) {
+          leftGamepad.buttons[0].pressed = localGamepadArray[4] !== 0; // pad
+          leftGamepad.buttons[1].pressed = localGamepadArray[5] !== 0; // trigger
+          leftGamepad.buttons[2].pressed = localGamepadArray[3] !== 0; // grip
+          leftGamepad.buttons[3].pressed = localGamepadArray[2] !== 0; // menu
+
+          leftGamepad.buttons[0].touched = localGamepadArray[9] !== 0; // pad
+          leftGamepad.buttons[1].touched = localGamepadArray[10] !== 0; // trigger
+          leftGamepad.buttons[2].touched = localGamepadArray[8] !== 0; // grip
+          leftGamepad.buttons[3].touched = localGamepadArray[7] !== 0; // menu
+
+          leftGamepad.axes[0] = localGamepadArray[11];
+          leftGamepad.axes[1] = localGamepadArray[12];
+
+          gamepads.push(leftGamepad);
+        }
+        system.GetControllerState(1, localGamepadArray);
+        if (!isNaN(localGamepadArray[0])) {
+          rightGamepad.buttons[0].pressed = localGamepadArray[4] !== 0; // pad
+          rightGamepad.buttons[1].pressed = localGamepadArray[5] !== 0; // trigger
+          rightGamepad.buttons[2].pressed = localGamepadArray[3] !== 0; // grip
+          rightGamepad.buttons[3].pressed = localGamepadArray[2] !== 0; // menu
+
+          rightGamepad.buttons[0].touched = localGamepadArray[9] !==> 0; // pad
+          rightGamepad.buttons[1].touched = localGamepadArray[10] !== 0; // trigger
+          rightGamepad.buttons[2].touched = localGamepadArray[8] !== 0; // grip
+          rightGamepad.buttons[3].touched = localGamepadArray[7] !== 0; // menu
+
+          rightGamepad.axes[0] = localGamepadArray[11];
+          rightGamepad.axes[1] = localGamepadArray[12];
+
+          gamepads.push(rightGamepad);
+        }
 
         platform.bindFrameBuffer(msFbo);
 

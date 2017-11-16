@@ -45,6 +45,7 @@ NAN_MODULE_INIT(IVRSystem::Init)
   /// virtual vr::ETrackedControllerRole GetControllerRoleForTrackedDeviceIndex( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
 
   Nan::SetPrototypeMethod(tpl, "GetTrackedDeviceClass", GetTrackedDeviceClass);
+  Nan::SetPrototypeMethod(tpl, "GetControllerState", GetControllerState);
 
   /// virtual bool IsTrackedDeviceConnected( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
   /// virtual bool GetBoolTrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
@@ -735,6 +736,63 @@ NAN_METHOD(IVRSystem::GetTrackedDeviceClass)
     obj->self_->GetTrackedDeviceClass(unDeviceIndex);
   info.GetReturnValue().Set(Nan::New<Number>(
     static_cast<uint32_t>(trackedDeviceClass)));
+}
+
+NAN_METHOD(IVRSystem::GetControllerState)
+{
+  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+
+  if (info.Length() != 2)
+  {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  if (!info[0]->IsNumber())
+  {
+    Nan::ThrowTypeError("Argument[0] must be a number.");
+    return;
+  }
+
+  if (!info[1]->IsFloat32Array())
+  {
+    Nan::ThrowTypeError("Argument[1] must be a Float32Array.");
+    return;
+  }
+
+  Local<Float32Array> buttons = Local<Float32Array>::Cast(info[1]);
+  buttons->Set(0, Number::New(Isolate::GetCurrent(), std::numeric_limits<float>::quiet_NaN()));
+
+  uint32_t side = info[0]->Uint32Value();
+  for (unsigned int i = 0; i < vr::k_unMaxTrackedDeviceCount; i++) {
+    vr::ETrackedDeviceClass deviceClass = obj->self_->GetTrackedDeviceClass(i);
+    if (deviceClass == vr::TrackedDeviceClass_Controller) {
+      const vr::ETrackedControllerRole controllerRole = obj->self_->GetControllerRoleForTrackedDeviceIndex(i);
+      if ((side == 0 && controllerRole == vr::TrackedControllerRole_LeftHand) || (side == 1 && controllerRole == vr::TrackedControllerRole_RightHand)) {
+        vr::VRControllerState_t controllerState;
+        if (obj->self_->GetControllerState(i, &controllerState, 1)) {
+          buttons->Set(0, Number::New(Isolate::GetCurrent(), 1));
+
+          buttons->Set(1, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_System)));
+          buttons->Set(2, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu)));
+          buttons->Set(3, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_Grip)));
+          buttons->Set(4, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)));
+          buttons->Set(5, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)));
+
+          buttons->Set(6, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_System)));
+          buttons->Set(7, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu)));
+          buttons->Set(8, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_Grip)));
+          buttons->Set(9, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)));
+          buttons->Set(10, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)));
+
+          buttons->Set(11, Number::New(Isolate::GetCurrent(), controllerState.rAxis[0].x));
+          buttons->Set(12, Number::New(Isolate::GetCurrent(), controllerState.rAxis[0].y));
+
+          break;
+        }
+      }
+    }
+  }
 }
 
 //=============================================================================
