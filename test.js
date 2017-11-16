@@ -94,6 +94,10 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
 
       getFrameData(frameData) {
         const hmdMatrix = localMatrix.fromArray(localFloat32Array);
+
+        hmdMatrix.decompose(localVector, localQuaternion, localVector2);
+        frameData.pose.set(localVector, localQuaternion);
+
         hmdMatrix.getInverse(hmdMatrix);
 
         system.GetEyeToHeadTransform(0, localFloat32Array4);
@@ -116,8 +120,6 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
         system.GetProjectionMatrix(1, camera.near, camera.far, localFloat32Array4);
         _normalizeMatrixArray(localFloat32Array4);
         frameData.rightProjectionMatrix.set(localFloat32Array4);
-
-        // localFloat32Array2 // XXX
 
         system.GetSeatedZeroPoseToStandingAbsoluteTrackingPose(localFloat32Array4);
         _normalizeMatrixArray(localFloat32Array4);
@@ -182,6 +184,7 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
       // renderer.setSize(canvas.width, canvas.height);
       renderer.setClearColor(0xffffff, 1);
       renderer.vr.enabled = true;
+      // renderer.vr.standing = true;
       const display = new FakeVRDisplay();
       renderer.vr.setDevice(display);
       scene = new THREE.Scene();
@@ -191,12 +194,12 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
       camera.lookAt(new THREE.Vector3(0, 0, 0));
       scene.add(camera);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
       directionalLight.position.set(1, 1, 1);
       scene.add(directionalLight);
 
       const boxMesh = (() => {
-        const geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
+        const geometry = new THREE.BoxBufferGeometry(1, 1, 1);
         const material = new THREE.MeshPhongMaterial({
           color: 0xFF0000,
         });
@@ -204,17 +207,19 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
       })();
       scene.add(boxMesh);
 
-      leftControllerMesh = controllerModel.clone();
+      leftControllerMesh = controllerModel.children[0].clone(true);
       scene.add(leftControllerMesh);
 
-      rightControllerMesh = controllerModel.clone();
+      rightControllerMesh = controllerModel.children[0].clone(true);
       scene.add(rightControllerMesh);
 
       const _render = () => {
         leftControllerMesh.matrix.fromArray(localFloat32Array2);
+        leftControllerMesh.matrix.decompose(leftControllerMesh.position, leftControllerMesh.quaternion, leftControllerMesh.scale);
         leftControllerMesh.updateMatrixWorld();
 
         rightControllerMesh.matrix.fromArray(localFloat32Array3);
+        rightControllerMesh.matrix.decompose(rightControllerMesh.position, rightControllerMesh.quaternion, rightControllerMesh.scale);
         rightControllerMesh.updateMatrixWorld();
 
         renderer.render(scene, camera);
@@ -235,6 +240,9 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
     const localFloat32Array2 = new Float32Array(16);
     const localFloat32Array3 = new Float32Array(16);
     const localFloat32Array4 = new Float32Array(16);
+    const localVector = new THREE.Vector3();
+    const localVector2 = new THREE.Vector3();
+    const localQuaternion = new THREE.Quaternion();
     const localMatrix = new THREE.Matrix4();
     const localMatrix2 = new THREE.Matrix4();
     const _normalizeMatrixArray = float32Array => {
