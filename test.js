@@ -165,8 +165,8 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
     let scene = null;
     let camera = null;
     let renderer = null;
-    let leftControllerMesh = null;
-    let rightControllerMesh = null;
+    let leftControllerMesh = new THREE.Object3D();
+    let rightControllerMesh = new THREE.Object3D();
     const _initRender = () => {
       renderer = new THREE.WebGLRenderer({
         canvas: canvas,
@@ -205,6 +205,12 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
       scene.add(rightControllerMesh);
 
       const _render = () => {
+        leftControllerMesh.matrix.fromArray(localFloat32Array2);
+        leftControllerMesh.updateMatrixWorld();
+
+        rightControllerMesh.matrix.fromArray(localFloat32Array3);
+        rightControllerMesh.updateMatrixWorld();
+
         renderer.render(scene, camera);
         renderer.context.flush();
 
