@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const THREE = require('three-zeo');
+const jimp = require('jimp');
 const webgl = require('node-webgl2');
 const openvr = require('./index.js');
 
@@ -31,15 +32,18 @@ window.document = {
       const img = new EventEmitter();
       img.addEventListener = img.on;
       img.removeEventListener = img.removeListener;
+      img.tagName = 'IMAGE';
       let src = '';
       Object.defineProperty(img, 'src', {
         get: () => src,
         set: newSrc => {
           src = newSrc;
 
-          fs.readFile(src, (err, b) => {
+          jimp.read(src, (err, jimpImg) => {
             if (!err) {
-              img.buffer = b;
+              img.width = jimpImg.bitmap.width;
+              img.height = jimpImg.bitmap.height;
+              img.data = jimpImg.bitmap.data;
               img.emit('load');
             } else {
               img.emit('error', err);
@@ -47,7 +51,9 @@ window.document = {
           });
         },
       });
-      img.buffer = null;
+      img.width = 0;
+      img.height = 0;
+      img.data = null;
       return img;
     } else {
       return null;
