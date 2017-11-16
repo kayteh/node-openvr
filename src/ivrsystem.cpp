@@ -770,20 +770,20 @@ NAN_METHOD(IVRSystem::GetControllerState)
       const vr::ETrackedControllerRole controllerRole = obj->self_->GetControllerRoleForTrackedDeviceIndex(i);
       if ((side == 0 && controllerRole == vr::TrackedControllerRole_LeftHand) || (side == 1 && controllerRole == vr::TrackedControllerRole_RightHand)) {
         vr::VRControllerState_t controllerState;
-        if (obj->self_->GetControllerState(i, &controllerState, 1)) {
+        if (obj->self_->GetControllerState(i, &controllerState, sizeof(controllerState))) {
           buttons->Set(0, Number::New(Isolate::GetCurrent(), 1));
 
-          buttons->Set(1, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_System)));
-          buttons->Set(2, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu)));
-          buttons->Set(3, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_Grip)));
-          buttons->Set(4, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)));
-          buttons->Set(5, Number::New(Isolate::GetCurrent(), controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)));
+          buttons->Set(1, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_System)) ? 1 : 0));
+          buttons->Set(2, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu)) ? 1 : 0));
+          buttons->Set(3, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_Grip)) ? 1 : 0));
+          buttons->Set(4, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)) ? 1 : 0));
+          buttons->Set(5, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)) ? 1 : 0));
 
-          buttons->Set(6, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_System)));
-          buttons->Set(7, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu)));
-          buttons->Set(8, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_Grip)));
-          buttons->Set(9, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)));
-          buttons->Set(10, Number::New(Isolate::GetCurrent(), controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)));
+          buttons->Set(6, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_System)) ? 1 : 0));
+          buttons->Set(7, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_ApplicationMenu)) ? 1 : 0));
+          buttons->Set(8, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_Grip)) ? 1 : 0));
+          buttons->Set(9, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)) ? 1 : 0));
+          buttons->Set(10, Number::New(Isolate::GetCurrent(), (controllerState.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)) ? 1 : 0));
 
           buttons->Set(11, Number::New(Isolate::GetCurrent(), controllerState.rAxis[0].x));
           buttons->Set(12, Number::New(Isolate::GetCurrent(), controllerState.rAxis[0].y));

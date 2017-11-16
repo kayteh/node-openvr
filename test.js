@@ -199,6 +199,7 @@ _requestJsonFile(path.join(controllerjsPath, 'model', 'controller.json'))
         this.orientation = Float32Array.from([0, 0, 0, 1]);
         this.angularVelocity = new Float32Array(3);
         this.angularAcceleration = new Float32Array(3);
+        this.axes = new Float32Array(2);
       }
     }
     const leftGamepad = new VRGamepad('left', 0);
