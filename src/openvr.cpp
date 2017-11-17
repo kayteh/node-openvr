@@ -42,7 +42,9 @@ NAN_METHOD(VR_Init)
   // If the VR system failed to initialize, immediately raise a node exception.
   if (system == nullptr)
   {
-    Nan::ThrowError(vr::VR_GetVRInitErrorAsEnglishDescription(error));
+    Local<Value> err = Exception::Error(String::NewFromUtf8(Isolate::GetCurrent(), vr::VR_GetVRInitErrorAsEnglishDescription(error)));
+    Local<Object>::Cast(err)->Set(String::NewFromUtf8(Isolate::GetCurrent(), "code"), Number::New(Isolate::GetCurrent(), error));
+    Nan::ThrowError(err);
     return;
   }
 
