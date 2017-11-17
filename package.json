@@ -22,7 +22,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "preinstall": "npm install native-openvr-deps",
+    "preinstall": "npm install native-openvr-deps --no-package-lock",
     "install": "node-gyp rebuild",
     "lint": "eslint .",
     "test": "mocha"
