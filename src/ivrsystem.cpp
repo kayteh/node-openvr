@@ -4,6 +4,7 @@
 #include <array>
 #include <node.h>
 #include <openvr.h>
+#include <nan.h>
 
 using namespace v8;
 
@@ -54,6 +55,8 @@ NAN_MODULE_INIT(IVRSystem::Init)
   /// virtual uint64_t GetUint64TrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
   /// virtual HmdMatrix34_t GetMatrix34TrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
   /// virtual uint32_t GetStringTrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, VR_OUT_STRING() char *pchValue, uint32_t unBufferSize, ETrackedPropertyError *pError = 0L ) = 0;
+  Nan::SetPrototypeMethod(tpl, "GetStringTrackedDeviceProperty", GetStringTrackedDeviceProperty);
+  
   /// virtual const char *GetPropErrorNameFromEnum( ETrackedPropertyError error ) = 0;
   /// virtual bool PollNextEvent( VREvent_t *pEvent, uint32_t uncbVREvent ) = 0;
   /// virtual bool PollNextEventWithPose( ETrackingUniverseOrigin eOrigin, VREvent_t *pEvent, uint32_t uncbVREvent, vr::TrackedDevicePose_t *pTrackedDevicePose ) = 0;
@@ -870,4 +873,46 @@ NAN_METHOD(IVRSystem::AcknowledgeQuit_UserPrompt)
   }
 
   obj->self_->AcknowledgeQuit_UserPrompt();
+}
+
+//=============================================================================
+/// virtual bool GetStringTrackedDeviceProperty(  ) = 0;
+NAN_METHOD(IVRSystem::GetStringTrackedDeviceProperty) {
+  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+  
+  if (info.Length() != 2) {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  if (!info[0]->IsNumber()) {
+    Nan::ThrowTypeError("First argument must be a tracked device index (TrackedDeviceIndex_t)");
+    return;
+  }
+
+  if (!info[1]->IsNumber()) {
+    Nan::ThrowTypeError("Second argument must be a tracked device property (TrackedDeviceProperty)");
+    return;
+  }
+
+  char buf[128];
+	vr::TrackedPropertyError err;
+
+	obj->self_->GetStringTrackedDeviceProperty(
+     (vr::TrackedDeviceIndex_t)info[0]->Uint32Value(), 
+     (vr::ETrackedDeviceProperty)info[1]->Uint32Value(),
+     buf, 
+     sizeof(buf), 
+     &err
+    );
+  
+	if (err != vr::TrackedProp_Success) {
+		// return std::string("Error Getting String: ") + pHmd->GetPropErrorNameFromEnum(err);
+		Nan::ThrowError("GetStringTrackedDeviceProperty Failed: " + err);
+	} else {
+    MaybeLocal<String> result = Nan::New<String>(buf);
+    info.GetReturnValue().Set(result.ToLocalChecked());
+	}
+
+  return;
 }

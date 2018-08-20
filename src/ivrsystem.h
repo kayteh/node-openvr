@@ -83,6 +83,7 @@ private:
   /// virtual ETrackedDeviceClass GetTrackedDeviceClass( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
   static NAN_METHOD(GetTrackedDeviceClass);
   static NAN_METHOD(GetControllerState);
+  static NAN_METHOD(GetStringTrackedDeviceProperty);
 
   /// virtual bool IsTrackedDeviceConnected( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
   /// virtual bool GetBoolTrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
