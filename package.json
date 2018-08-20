@@ -1,8 +1,8 @@
 {
   "name": "node-openvr",
-  "version": "0.0.54",
+  "version": "0.1.0",
   "description": "Node bindings to OpenVR",
-  "homepage": "https://github.com/modulesio/node-openvr#readme",
+  "homepage": "https://github.com/kayteh/node-openvr#readme",
   "license": "MIT",
   "keywords": [
     "glfw",
@@ -12,44 +12,24 @@
     "3d",
     "graphics"
   ],
-  "author": "Avaer Kazmer <a@modules.io>",
+  "author": "Katalina T. <kata@kat.cafe>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/modulesio/node-openvr.git"
+    "url": "git+https://github.com/kayteh/node-openvr.git"
   },
   "bugs": {
-    "url": "https://github.com/modulesio/node-openvr/issues"
+    "url": "https://github.com/kayteh/node-openvr/issues"
   },
   "main": "index.js",
   "scripts": {
-    "preinstall": "npm install native-openvr-deps --no-package-lock",
     "install": "node-gyp rebuild",
-    "lint": "eslint .",
-    "test": "mocha"
-  },
-  "directories": {
-    "src": "src",
-    "lib": "lib",
-    "test": "test"
+    "r": "node-gyp rebuild"
   },
   "engines": {
     "node": ">=3.0.0"
   },
   "dependencies": {
-    "bindings": "^1.2.1",
-    "nan": "^2.1.0",
-    "native-openvr-deps": "0.0.1",
-    "node-webgl2": "0.0.76"
-  },
-  "devDependencies": {
-    "babel-eslint": "^7.1.0",
-    "chai": "^3.5.0",
-    "dirty-chai": "^1.2.2",
-    "eslint": "^3.10.0",
-    "eslint-config-airbnb": "^13.0.0",
-    "eslint-plugin-import": "^2.1.1",
-    "eslint-plugin-jsx-a11y": "^2.2.3",
-    "eslint-plugin-react": "^6.6.0",
-    "mocha": "^3.2.0"
+    "bindings": "^1.3.0",
+    "nan": "^2.10.0"
   }
 }
