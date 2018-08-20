@@ -65,9 +65,9 @@ NAN_MODULE_INIT(IVRSystem::Init)
   /// virtual const char *GetButtonIdNameFromEnum( EVRButtonId eButtonId ) = 0;
   /// virtual const char *GetControllerAxisTypeNameFromEnum( EVRControllerAxisType eAxisType ) = 0;
 
-  Nan::SetPrototypeMethod(tpl, "CaptureInputFocus", CaptureInputFocus);
-  Nan::SetPrototypeMethod(tpl, "ReleaseInputFocus", ReleaseInputFocus);
-  Nan::SetPrototypeMethod(tpl, "IsInputFocusCapturedByAnotherProcess", IsInputFocusCapturedByAnotherProcess);
+  // Nan::SetPrototypeMethod(tpl, "CaptureInputFocus", CaptureInputFocus);
+  // Nan::SetPrototypeMethod(tpl, "ReleaseInputFocus", ReleaseInputFocus);
+  // Nan::SetPrototypeMethod(tpl, "IsInputFocusCapturedByAnotherProcess", IsInputFocusCapturedByAnotherProcess);
 
   /// virtual uint32_t DriverDebugRequest( vr::TrackedDeviceIndex_t unDeviceIndex, const char *pchRequest, char *pchResponseBuffer, uint32_t unResponseBufferSize ) = 0;
   /// virtual vr::EVRFirmwareError PerformFirmwareUpdate( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
@@ -795,52 +795,52 @@ NAN_METHOD(IVRSystem::GetControllerState)
   }
 }
 
-//=============================================================================
-/// virtual bool CaptureInputFocus() = 0;
-NAN_METHOD(IVRSystem::CaptureInputFocus)
-{
-  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+// //=============================================================================
+// /// virtual bool CaptureInputFocus() = 0;
+// NAN_METHOD(IVRSystem::CaptureInputFocus)
+// {
+//   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 0)
-  {
-    Nan::ThrowError("Wrong number of arguments.");
-    return;
-  }
+//   if (info.Length() != 0)
+//   {
+//     Nan::ThrowError("Wrong number of arguments.");
+//     return;
+//   }
 
-  const auto result = obj->self_->CaptureInputFocus();
-  info.GetReturnValue().Set(Nan::New<Boolean>(result));
-}
+//   const auto result = obj->self_->CaptureInputFocus();
+//   info.GetReturnValue().Set(Nan::New<Boolean>(result));
+// }
 
-//=============================================================================
-/// virtual void ReleaseInputFocus() = 0;
-NAN_METHOD(IVRSystem::ReleaseInputFocus)
-{
-  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+// //=============================================================================
+// /// virtual void ReleaseInputFocus() = 0;
+// NAN_METHOD(IVRSystem::ReleaseInputFocus)
+// {
+//   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 0)
-  {
-    Nan::ThrowError("Wrong number of arguments.");
-    return;
-  }
+//   if (info.Length() != 0)
+//   {
+//     Nan::ThrowError("Wrong number of arguments.");
+//     return;
+//   }
 
-  obj->self_->ReleaseInputFocus();
-}
+//   obj->self_->ReleaseInputFocus();
+// }
 
-//=============================================================================
-/// virtual bool IsInputFocusCapturedByAnotherProcess() = 0;
-NAN_METHOD(IVRSystem::IsInputFocusCapturedByAnotherProcess)
-{
-  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+// //=============================================================================
+// /// virtual bool IsInputFocusCapturedByAnotherProcess() = 0;
+// NAN_METHOD(IVRSystem::IsInputFocusCapturedByAnotherProcess)
+// {
+//   IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
 
-  if (info.Length() != 0)
-  {
-    Nan::ThrowError("Wrong number of arguments.");
-    return;
-  }
+//   if (info.Length() != 0)
+//   {
+//     Nan::ThrowError("Wrong number of arguments.");
+//     return;
+//   }
 
-  const auto result = obj->self_->IsInputFocusCapturedByAnotherProcess();
-  info.GetReturnValue().Set(Nan::New<Boolean>(result));
-}
+//   const auto result = obj->self_->IsInputFocusCapturedByAnotherProcess();
+//   info.GetReturnValue().Set(Nan::New<Boolean>(result));
+// }
 
 //=============================================================================
 /// virtual void AcknowledgeQuit_Exiting() = 0;

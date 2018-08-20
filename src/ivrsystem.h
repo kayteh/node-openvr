@@ -102,14 +102,14 @@ private:
   /// virtual const char *GetButtonIdNameFromEnum( EVRButtonId eButtonId ) = 0;
   /// virtual const char *GetControllerAxisTypeNameFromEnum( EVRControllerAxisType eAxisType ) = 0;
 
-  /// virtual bool CaptureInputFocus() = 0;
-  static NAN_METHOD(CaptureInputFocus);
+  // /// virtual bool CaptureInputFocus() = 0;
+  // static NAN_METHOD(CaptureInputFocus);
 
-  /// virtual void ReleaseInputFocus() = 0;
-  static NAN_METHOD(ReleaseInputFocus);
+  // /// virtual void ReleaseInputFocus() = 0;
+  // static NAN_METHOD(ReleaseInputFocus);
 
-  /// virtual bool IsInputFocusCapturedByAnotherProcess() = 0;
-  static NAN_METHOD(IsInputFocusCapturedByAnotherProcess);
+  // /// virtual bool IsInputFocusCapturedByAnotherProcess() = 0;
+  // static NAN_METHOD(IsInputFocusCapturedByAnotherProcess);
 
   /// virtual uint32_t DriverDebugRequest( vr::TrackedDeviceIndex_t unDeviceIndex, const char *pchRequest, char *pchResponseBuffer, uint32_t unResponseBufferSize ) = 0;
   /// virtual vr::EVRFirmwareError PerformFirmwareUpdate( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
