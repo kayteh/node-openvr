@@ -2,7 +2,7 @@
 #define NODE_OPENVR_H
 
 #include <nan.h>
-
+;
 /// inline IVRSystem *VR_Init( EVRInitError *peError, EVRApplicationType eApplicationType );
 NAN_METHOD(VR_Init);
 

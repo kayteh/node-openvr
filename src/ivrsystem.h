@@ -4,6 +4,8 @@
 #include <nan.h>
 #include <v8.h>
 
+; // this fixes some stuff apparently?
+
 // Forward declaration of OpenVR class.
 // We only need the pointer here, so this is cleaner than importing the header.
 namespace vr

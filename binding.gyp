@@ -17,6 +17,7 @@
         'src/bindings.cpp',
         'src/ivrsystem.cpp',
         'src/ivrcompositor.cpp',
+        'src/ivroverlay.cpp',
         'src/openvr.cpp'
       ],
       'include_dirs': [
@@ -52,7 +53,7 @@
           'defines' : ['WIN32_LEAN_AND_MEAN', 'VC_EXTRALEAN', 'NOMINMAX'],
           'msvs_settings' : {
             'VCCLCompilerTool' : {
-              'AdditionalOptions' : ['/O2','/Oy','/GL','/GF','/Gm-','/EHsc','/MT','/GS','/Gy','/GR-','/Gd']
+              'AdditionalOptions' : ['/std:c++17','/O2','/Oy','/GL','/GF','/Gm-','/EHsc','/MT','/GS','/Gy','/GR-','/Gd']
             },
             'VCLinkerTool' : {
               'AdditionalOptions' : ['/OPT:REF','/OPT:ICF','/LTCG']
