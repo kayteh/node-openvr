@@ -23,7 +23,9 @@
   "main": "index.js",
   "scripts": {
     "install": "node-gyp rebuild",
-    "r": "node-gyp rebuild"
+    "r": "node-gyp rebuild",
+    "s": "node samples/image-overlay/index.js",
+    "rs": "npm run r && npm run s"
   },
   "engines": {
     "node": ">=3.0.0"
