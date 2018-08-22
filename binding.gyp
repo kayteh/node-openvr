@@ -12,6 +12,7 @@
       'target_name': 'openvr',
       'defines': [
         'VERSION=1.0.16',
+        'TEST_METHODS'
       ],
       'sources': [
         'src/bindings.cpp',

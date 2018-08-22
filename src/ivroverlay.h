@@ -2,6 +2,7 @@
 #define NODE_IVROVERLAY_H
 
 #include <nan.h>
+#include <map>
 #include <v8.h>
 #include <openvr.h>
 
@@ -14,19 +15,25 @@ class IVROverlay : public Nan::ObjectWrap {
         explicit IVROverlay(vr::IVROverlay *self);
         ~IVROverlay() = default;
 
+        static std::map<uint32_t, vr::VROverlayHandle_t> overlayHandleMap;
+
         static NAN_METHOD(New);
         static NAN_METHOD(Check);
 
         static NAN_METHOD(CreateOverlay);
 
         // static NAN_METHOD(SetOverlayAlpha);
-        // static NAN_METHOD(SetOverlayRaw);
+        static NAN_METHOD(SetOverlayRawBuf);
         static NAN_METHOD(SetOverlayFromFile);
         // static NAN_METHOD(SetOverlayTransformAbsolute);
         static NAN_METHOD(SetOverlayTransformTrackedDeviceRelative);
         // static NAN_METHOD(SetOverlayWidthInMeters);
  
         static NAN_METHOD(ShowOverlay);
+
+        #ifdef TEST_METHODS
+        static NAN_METHOD(TestHandle);
+        #endif
 
         static inline Nan::Persistent<v8::Function>& constructor() {
             static Nan::Persistent<v8::Function> the_constructor;

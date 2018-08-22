@@ -1,13 +1,15 @@
 #include "ivroverlay.h"
-
+// #include "util.h"
 
 #include <node.h>
 #include <openvr.h>
 #include "other_util.h"
 #include "ivrsystem.h"
+
 using namespace v8;
 
 #define CHECK_ERROR(err) { if (err != vr::VROverlayError_None) { Nan::ThrowError(vr::VROverlay()->GetOverlayErrorNameFromEnum(err)); return; } }
+#define HND_OVERLAY(prop) overlayHandleMap[prop->Uint32Value()]
 
 bool IVROverlay::checkError(vr::VROverlayError err, const char *msg) {
     if (err != vr::VROverlayError_None) {
@@ -18,8 +20,10 @@ bool IVROverlay::checkError(vr::VROverlayError err, const char *msg) {
     return true;
 }
 
+std::map<uint32_t, vr::VROverlayHandle_t> IVROverlay::overlayHandleMap;
+
 NAN_MODULE_INIT(IVROverlay::Init) {
-    // tpl->InstanceTemplate()->SetInternalFieldCount(1);
+    
 
     SET_METHOD(CreateOverlay);
     SET_METHOD(ShowOverlay);
@@ -30,7 +34,6 @@ NAN_MODULE_INIT(IVROverlay::Init) {
     
     SET_METHOD(SetOverlayTransformTrackedDeviceRelative);
     // target->Set("SetOverlayWidthInMeters", SetOverlayWidthInMeters);
-    
 }
 
 // IVROverlay::IVROverlay(vr::IVROverlay *self) : self_(self) {}
@@ -48,7 +51,7 @@ NAN_METHOD(IVROverlay::New) {
 
 NAN_METHOD(IVROverlay::Check) {
     if (!vr::VROverlay()) {
-        info.GetReturnValue().Set(true);
+        info.GetReturnValue().Set(false);
         Nan::ThrowError("Overlay was unable to fetch the shared instance.");
         return;
     }
@@ -68,10 +71,11 @@ NAN_METHOD(IVROverlay::CreateOverlay) {
     V8STR(info[1], name);
     
     vr::VROverlayError err = vr::VROverlay()->CreateOverlay(key, name, &hOverlay);
-    
-    if (checkError(err, "CreateOverlay failed")) {
-        info.GetReturnValue().Set((uint32_t)hOverlay);
-    }
+    CHECK_ERROR(err);
+
+    uint32_t oHndPtr = (uint32_t)hOverlay;
+    overlayHandleMap.insert(std::pair<uint32_t, vr::VROverlayHandle_t>(oHndPtr, hOverlay));
+    info.GetReturnValue().Set(oHndPtr);
 }
 
 NAN_METHOD(IVROverlay::ShowOverlay) {
@@ -81,9 +85,9 @@ NAN_METHOD(IVROverlay::ShowOverlay) {
     }
 
     vr::VROverlayError err;    
-    err = vr::VROverlay()->ShowOverlay((vr::VROverlayHandle_t)info[0]->Uint32Value());
+    err = vr::VROverlay()->ShowOverlay(HND_OVERLAY(info[0]));
     
-    checkError(err, "ShowOverlay failed");
+    CHECK_ERROR(err);
 }
 
 NAN_METHOD(IVROverlay::SetOverlayFromFile) {
@@ -95,11 +99,22 @@ NAN_METHOD(IVROverlay::SetOverlayFromFile) {
     V8STR(info[1], path);
 
     vr::VROverlayError err;
-    Nan::ThrowError(vr::VROverlay()->GetOverlayErrorNameFromEnum(vr::VROverlayError_None));
     err = vr::VROverlay()->SetOverlayFromFile(HND_OVERLAY(info[0]), path);
-    Nan::ThrowError(vr::VROverlay()->GetOverlayErrorNameFromEnum(err));
     CHECK_ERROR(err);
 }
+
+// NAN_METHOD(IVROverlay::SetOverlayRawBuf) {
+//     if (info.Length() != 5) {
+//         Nan::ThrowError("Wrong number of arguments.");
+//         return;
+//     }
+
+//     vr::VROverlayError err;
+//     err = vr::VROverlay()->SetOverlayFromFile(HND_OVERLAY(info[0]), path);
+//     // Nan::ThrowError(vr::VROverlay()->GetOverlayErrorNameFromEnum(err));
+//     CHECK_ERROR(err);
+// }
+
 
 NAN_METHOD(IVROverlay::SetOverlayTransformTrackedDeviceRelative) {
 

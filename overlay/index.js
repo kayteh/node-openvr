@@ -25,9 +25,10 @@ class VROverlay {
     if (!vr.overlay.Check()) {
       throw new Error("Couldn't initialize a VROverlay. Are you in Scene or Overlay mode from VR_Init?")
     }
-    console.log('pre-create overlay')
+    // console.log('pre-create overlay')
     this.handle = vr.overlay.CreateOverlay(this.key, this.name)
-    console.log('post-create overlay')
+    // console.log('post-create overlay')
+    // console.log(vr.overlay.TestHandle(this.handle), this.handle)
   }
 
   show () {
@@ -42,15 +43,14 @@ class VROverlay {
     vr.overlay.SetOverlayAlpha(this.handle)
   }
 
-  setTextureRaw (tex, {width, height, depth}) {
+  setTextureFromBuffer (tex, {width, height, depth = 8}) {
     // if depth isn't defined, but it is a typed array, we can use the typed array bitness
     // otherwise, just 8 (0-255)
-    depth = depth || (tex.BYTES_PER_ELEMENT != null) ? tex.BYTES_PER_ELEMENT * 8 : 8
-    vr.overlay.SetOverlayRaw(this.handle, tex, width, height, depth)
+    vr.overlay.SetOverlayRawBuf(this.handle, tex, width, height, depth)
   }
 
   setTextureFromFile (path) {
-    console.log(vr.overlay.SetOverlayFromFile(this.handle, path))
+    vr.overlay.SetOverlayFromFile(this.handle, path)
   }
 
   transformTrackedDeviceRelative (trackedDevice, {x, y, z}) {
