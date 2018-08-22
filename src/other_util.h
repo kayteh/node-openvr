@@ -9,7 +9,7 @@
 
 #define SET_METHOD(name) target->Set(Nan::New(#name).ToLocalChecked(), Nan::New<v8::FunctionTemplate>(name)->GetFunction());
 
-#define V8STR(prop, name) char* name; prop->ToString()->WriteUtf8(name);
+#define V8STR(prop, name) char* name = ""; prop->ToString()->WriteUtf8(name);
 
 #define HND_OVERLAY(prop) (vr::VROverlayHandle_t)prop->IntegerValue()
 
