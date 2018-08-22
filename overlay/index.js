@@ -17,6 +17,7 @@ class VROverlay {
     this.name = name || key
     this.key = key || name
     this.handle = handle
+    this.renderer = vr.overlay.Internals()
 
     if (!skipChecks) this.init()
   }
@@ -43,10 +44,24 @@ class VROverlay {
     vr.overlay.SetOverlayAlpha(this.handle)
   }
 
-  setTextureFromBuffer (tex, {width, height, depth = 8}) {
+  setTextureRaw (tex, {width, height, depth = 8}) {
     // if depth isn't defined, but it is a typed array, we can use the typed array bitness
     // otherwise, just 8 (0-255)
-    vr.overlay.SetOverlayRawBuf(this.handle, tex, width, height, depth)
+    vr.overlay.SetOverlayRaw(this.handle, tex, width, height, depth)
+  }
+
+  setTextureFromBuffer (tex, {width, height, depth = 8} = {}) {
+    // if depth isn't defined, but it is a typed array, we can use the typed array bitness
+    // otherwise, just 8 (0-255)
+    // tex = Uint8ClampedArray.from(tex)
+
+    if (tex.length !== width * height * 4) {
+      console.warn(`Texture is not the correct number of elements for the size given. Got ${tex.length} bytes, looking for ${width * height * 4}.`)
+    }
+
+    if (this.renderer === 0) Uint8Array.from(tex.map(x => x * 255))
+
+    vr.overlay.SetOverlayTextureFromBuffer(this.handle, tex, width, height, depth)
   }
 
   setTextureFromFile (path) {

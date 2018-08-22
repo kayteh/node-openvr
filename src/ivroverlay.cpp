@@ -2,7 +2,6 @@
 // #include "util.h"
 
 #include <node.h>
-#include <openvr.h>
 #include "other_util.h"
 #include "ivrsystem.h"
 
@@ -22,18 +21,36 @@ bool IVROverlay::checkError(vr::VROverlayError err, const char *msg) {
 
 std::map<uint32_t, vr::VROverlayHandle_t> IVROverlay::overlayHandleMap;
 
-NAN_MODULE_INIT(IVROverlay::Init) {
-    
+#ifdef OVERLAY_D3D
+ID3D11Device* IVROverlay::mDevice;
+#else
+GLFWwindow* IVROverlay::glWindow = NULL;
+#endif
 
+NAN_MODULE_INIT(IVROverlay::Init) {
     SET_METHOD(CreateOverlay);
     SET_METHOD(ShowOverlay);
     SET_METHOD(Check);
     
     // target->Set("SetOverlayRaw", SetOverlayRaw);
     SET_METHOD(SetOverlayFromFile);
+    // SET_METHOD(SetOverlayRaw);
+    SET_METHOD(SetOverlayTextureFromBuffer);
     
     SET_METHOD(SetOverlayTransformTrackedDeviceRelative);
     // target->Set("SetOverlayWidthInMeters", SetOverlayWidthInMeters);
+
+    SET_METHOD(Internals);
+}
+
+NAN_METHOD(IVROverlay::Internals) {
+    info.GetReturnValue().Set(
+        #ifdef OVERLAY_D3D
+        0
+        #else
+        1
+        #endif
+    );
 }
 
 // IVROverlay::IVROverlay(vr::IVROverlay *self) : self_(self) {}
@@ -64,6 +81,23 @@ NAN_METHOD(IVROverlay::CreateOverlay) {
         Nan::ThrowError("Wrong number of arguments.");
         return;
     }
+
+    #ifdef OVERLAY_D3D
+    if (mDevice == NULL) {
+        HRESULT ret = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, NULL, 0, D3D11_SDK_VERSION, &mDevice, NULL, NULL);
+    }
+    #else
+    if (glWindow == NULL) {
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+        GLFWwindow* glWindow = glfwCreateWindow(2048, 2048, "node-openvr", nullptr, nullptr);
+        glfwMakeContextCurrent(glWindow);
+    }
+    #endif
 
     vr::VROverlayHandle_t hOverlay = 0U;
 
@@ -103,18 +137,72 @@ NAN_METHOD(IVROverlay::SetOverlayFromFile) {
     CHECK_ERROR(err);
 }
 
-// NAN_METHOD(IVROverlay::SetOverlayRawBuf) {
-//     if (info.Length() != 5) {
-//         Nan::ThrowError("Wrong number of arguments.");
-//         return;
-//     }
+NAN_METHOD(IVROverlay::SetOverlayTextureFromBuffer) {
+    if (info.Length() < 4) {
+        Nan::ThrowError("Wrong number of arguments.");
+        return;
+    }
 
-//     vr::VROverlayError err;
-//     err = vr::VROverlay()->SetOverlayFromFile(HND_OVERLAY(info[0]), path);
-//     // Nan::ThrowError(vr::VROverlay()->GetOverlayErrorNameFromEnum(err));
-//     CHECK_ERROR(err);
-// }
+    if (!info[1]->IsArrayBufferView()) {
+        Nan::ThrowTypeError("Argument 2 must be an ArrayBufferView, such as a Uint8ClampedArray");
+        return;
+    }
 
+    Local<ArrayBufferView> input = info[1].As<ArrayBufferView>();
+
+    uint32_t width = info[2]->Uint32Value();
+    uint32_t height = info[3]->Uint32Value();
+    uint32_t depth = info[4]->Uint32Value();
+
+#ifdef OVERLAY_D3D
+    Nan::TypedArrayContents<uint8_t> buf(input);
+    const D3D11_SUBRESOURCE_DATA initData = { *buf, sizeof(uint8_t), 0 };
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_IMMUTABLE;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+    ID3D11Texture2D *texD3D11;
+    HRESULT res = mDevice->CreateTexture2D(
+        &desc,
+        &initData,
+        &texD3D11
+    );
+
+    if (res != S_OK) {
+        Nan::ThrowError("Texture failed to create. Check exit code.");
+        exit(res);
+        return;
+    }
+
+    vr::Texture_t tex = {texD3D11, vr::ETextureType::TextureType_DirectX, vr::EColorSpace::ColorSpace_Gamma};
+
+#else // !OVERLAY_D3D
+    Nan::TypedArrayContents<float> buf(input);
+
+    GLuint texGl;
+
+    glGenTextures(1, &texGl);
+
+    glBindTexture(GL_TEXTURE_2D, texGl);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, *buf);
+
+    vr::Texture_t tex = {&texGl, vr::ETextureType::TextureType_OpenGL, vr::EColorSpace::ColorSpace_Auto};
+
+#endif // OVERLAY_D3D
+
+    vr::VROverlayError err;
+    err = vr::VROverlay()->SetOverlayTexture(HND_OVERLAY(info[0]), &tex);
+    
+    CHECK_ERROR(err);
+}
 
 NAN_METHOD(IVROverlay::SetOverlayTransformTrackedDeviceRelative) {
 

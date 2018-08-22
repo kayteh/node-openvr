@@ -3,8 +3,17 @@
 
 #include <nan.h>
 #include <map>
+
+#ifdef OVERLAY_D3D
+#include <d3d11.h>
+#include <dxgi.h>
+#else
+#include <GLFW/glfw3.h>
+#endif
+
 #include <v8.h>
 #include <openvr.h>
+
 
 class IVROverlay : public Nan::ObjectWrap {
     public:
@@ -16,14 +25,21 @@ class IVROverlay : public Nan::ObjectWrap {
         ~IVROverlay() = default;
 
         static std::map<uint32_t, vr::VROverlayHandle_t> overlayHandleMap;
+        
+        #ifdef OVERLAY_D3D
+        static ID3D11Device* mDevice;
+        #else
+        static GLFWwindow* glWindow;
+        #endif
 
         static NAN_METHOD(New);
         static NAN_METHOD(Check);
+        static NAN_METHOD(Internals);
 
         static NAN_METHOD(CreateOverlay);
 
         // static NAN_METHOD(SetOverlayAlpha);
-        static NAN_METHOD(SetOverlayRawBuf);
+        static NAN_METHOD(SetOverlayTextureFromBuffer);
         static NAN_METHOD(SetOverlayFromFile);
         // static NAN_METHOD(SetOverlayTransformAbsolute);
         static NAN_METHOD(SetOverlayTransformTrackedDeviceRelative);

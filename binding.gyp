@@ -12,7 +12,7 @@
       'target_name': 'openvr',
       'defines': [
         'VERSION=1.0.16',
-        'TEST_METHODS'
+        'OVERLAY_D3D'
       ],
       'sources': [
         'src/bindings.cpp',
@@ -24,6 +24,7 @@
       'include_dirs': [
         "<!(node -e \"require('nan')\")",
         '<(module_root_dir)/lib/openvr/headers',
+        '<(module_root_dir)/lib/glfw/include'
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -49,8 +50,8 @@
           ],
         }],
         ['OS=="win"', {
-          'library_dirs': ['<(module_root_dir)/lib/openvr/lib/win64'],
-          'libraries': ['openvr_api.lib'],
+          'library_dirs': ['<(module_root_dir)/lib/openvr/lib/win64', '<(module_root_dir)/lib/glfw/lib-vc2015'],
+          'libraries': ['openvr_api.lib', 'glfw3dll.lib', 'opengl32.lib', 'd3d11.lib'],
           'defines' : ['WIN32_LEAN_AND_MEAN', 'VC_EXTRALEAN', 'NOMINMAX'],
           'msvs_settings' : {
             'VCCLCompilerTool' : {
@@ -64,7 +65,10 @@
           [
             {
               'destination': '<(module_root_dir)/build/Release',
-              'files': ['<(module_root_dir)/lib/openvr/bin/win64/openvr_api.dll']
+              'files': [
+                '<(module_root_dir)/lib/openvr/bin/win64/openvr_api.dll',
+                '<(module_root_dir)/lib/glfw/lib-vc2015/glfw3.dll',
+              ]
             }
           ],
         }],
