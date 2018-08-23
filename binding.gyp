@@ -11,8 +11,7 @@
     {
       'target_name': 'openvr',
       'defines': [
-        'VERSION=1.0.16',
-        'OVERLAY_D3D'
+        'VERSION=1.0.16'
       ],
       'sources': [
         'src/bindings.cpp',
@@ -24,7 +23,8 @@
       'include_dirs': [
         "<!(node -e \"require('nan')\")",
         '<(module_root_dir)/lib/openvr/headers',
-        '<(module_root_dir)/lib/glfw/include'
+        '<(module_root_dir)/lib/glfw/include',
+        '<(module_root_dir)/lib/openvr/samples/thirdparty/sdl2-2.0.3/include'
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -51,8 +51,8 @@
         }],
         ['OS=="win"', {
           'library_dirs': ['<(module_root_dir)/lib/openvr/lib/win64', '<(module_root_dir)/lib/glfw/lib-vc2015'],
-          'libraries': ['openvr_api.lib', 'glfw3dll.lib', 'opengl32.lib', 'd3d11.lib'],
-          'defines' : ['WIN32_LEAN_AND_MEAN', 'VC_EXTRALEAN', 'NOMINMAX'],
+          'libraries': ['openvr_api.lib', 'glfw3dll.lib', 'opengl32.lib'],
+          'defines' : ['VC_EXTRALEAN', 'NOMINMAX'],
           'msvs_settings' : {
             'VCCLCompilerTool' : {
               'AdditionalOptions' : ['/std:c++17','/O2','/Oy','/GL','/GF','/Gm-','/EHsc','/MT','/GS','/Gy','/GR-','/Gd']
