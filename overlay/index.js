@@ -59,7 +59,7 @@ class VROverlay {
       console.warn(`Texture is not the correct number of elements for the size given. Got ${tex.length} bytes, looking for ${width * height * 4}.`)
     }
 
-    if (this.renderer === 0) Uint8Array.from(tex.map(x => x * 255))
+    // tex = Uint8Array.from(tex.map(x => x * 255))
 
     vr.overlay.SetOverlayTextureFromBuffer(this.handle, tex, width, height, depth)
   }
