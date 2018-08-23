@@ -4,12 +4,8 @@
 #include <nan.h>
 #include <map>
 
-#ifdef OVERLAY_D3D
-#include <d3d11.h>
-#include <dxgi.h>
-#else
 #include <GLFW/glfw3.h>
-#endif
+#include <SDL_opengl.h>
 
 #include <v8.h>
 #include <openvr.h>
@@ -26,11 +22,8 @@ class IVROverlay : public Nan::ObjectWrap {
 
         static std::map<uint32_t, vr::VROverlayHandle_t> overlayHandleMap;
         
-        #ifdef OVERLAY_D3D
-        static ID3D11Device* mDevice;
-        #else
         static GLFWwindow* glWindow;
-        #endif
+        static GLuint bufferTexture;
 
         static NAN_METHOD(New);
         static NAN_METHOD(Check);
@@ -59,6 +52,7 @@ class IVROverlay : public Nan::ObjectWrap {
 
         // vr::IVROverlay * const self_;
         static bool checkError(vr::VROverlayError err, const char* v);
+        static vr::Texture_t getTexture(uint8_t* buffer, uint32_t width, uint32_t height);
 }
 
 
