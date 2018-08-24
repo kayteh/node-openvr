@@ -128,6 +128,9 @@ NAN_METHOD(IVROverlay::CreateOverlay) {
     vr::VROverlayError err = vr::VROverlay()->CreateOverlay(key, name, &hOverlay);
     CHECK_ERROR(err);
 
+    // set bounds to correct OpenGL's texture draw
+    err = vr::VROverlay()->SetOverlayTextureBounds(hOverlay, &(vr::VRTextureBounds_t{ 0.F, 1.F, 1.F, 0.F }));
+
     uint32_t oHndPtr = (uint32_t)hOverlay;
     overlayHandleMap.insert(std::pair<uint32_t, vr::VROverlayHandle_t>(oHndPtr, hOverlay));
     info.GetReturnValue().Set(oHndPtr);
