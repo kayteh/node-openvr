@@ -37,5 +37,7 @@ module.exports = {
     console.log(this.agent(VRSystem))
   },
 
-  VRVec3
+  VRVec3,
+
+  ...require('./projectionMatrix')
 }
