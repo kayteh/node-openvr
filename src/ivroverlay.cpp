@@ -29,7 +29,7 @@ vr::Texture_t IVROverlay::getTexture(uint8_t* buf, uint32_t width, uint32_t heig
 		glGenTextures(1, &bufferTexture);
 
 		glBindTexture(GL_TEXTURE_2D, bufferTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, buf);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -43,7 +43,7 @@ vr::Texture_t IVROverlay::getTexture(uint8_t* buf, uint32_t width, uint32_t heig
 		glBindTexture(GL_TEXTURE_2D, 0);
 	} else {
 		glBindTexture(GL_TEXTURE_2D, bufferTexture);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, buf);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
