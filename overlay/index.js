@@ -1,8 +1,6 @@
 const vr = require('..')
 const { VRVec3 } = require('../tools')
 
-console.log(vr.overlay)
-
 class VROverlay {
   constructor ({system, key, name, skipChecks = false, handle = null}) {
     // checking for sanity
@@ -18,6 +16,8 @@ class VROverlay {
     this.key = key || name
     this.handle = handle
     this.renderer = vr.overlay.Internals()
+
+    this._pos = VRVec3.HmdMatrix34(0, 0, 0)
 
     if (!skipChecks) this.init()
   }
@@ -72,8 +72,40 @@ class VROverlay {
     vr.overlay.SetOverlayTransformTrackedDeviceRelative(this.handle, trackedDevice, VRVec3.HmdMatrix34(x, y, z))
   }
 
+  /*
+  notes on how this matrix works
+  [
+    [ Sx, Rx, A, X ],
+    [ Ry, Sy, ?, Y ],
+    [ Rz, Rz, Sz, Z ],
+  ]
+
+  Sx) Scale
+  Rx) Rotation
+
+
+  A) around -30 or +30, this will pick which eye this renders to?
+  B) 
+  */
+  transformTrackedDeviceRelativeMatrix (trackedDevice, matrix) {
+    vr.overlay.SetOverlayTransformTrackedDeviceRelative(this.handle, trackedDevice, matrix)
+  }
+
   transformAbsolute ({x, y, z}) {
-    vr.overlay.SetOverlayTransformAbsolute(this.handle, VRVec3.HmdMatrix34(x, y, z))
+    this._pos = VRVec3.HmdMatrix34(x, y, z)
+    vr.overlay.SetOverlayTransformAbsolute(this.handle, this._pos)
+  }
+
+  set position (v) {
+    this.transformTrackedDeviceRelative(0, VRVec3.HmdMatrix34(v))
+  }
+
+  get position () {
+    return this._pos
+  }
+
+  set rotation (v) {
+    this.transformAbsolute(this._pos)
   }
 
   get width () {
