@@ -1,5 +1,5 @@
 const vr = require('..')
-const { VRVec3 } = require('../tools')
+const { Vector3, Matrix3x4, Quaternion } = require('../tools')
 
 class VROverlay {
   constructor ({system, key, name, skipChecks = false, handle = null}) {
@@ -17,7 +17,9 @@ class VROverlay {
     this.handle = handle
     this.renderer = vr.overlay.Internals()
 
-    this._pos = VRVec3.HmdMatrix34(0, 0, 0)
+    // probably okay for the user to mess with these
+    this.positionMode = 'absolute' // or 'relative
+    this.relativeDevice = vr.k_unTrackedDeviceIndex_Hmd
 
     if (!skipChecks) this.init()
   }
@@ -34,6 +36,10 @@ class VROverlay {
 
   show () {
     vr.overlay.ShowOverlay(this.handle)
+  }
+
+  hide () {
+    vr.overlay.HideOverlay(this.handle)
   }
 
   get alpha () {
@@ -68,44 +74,38 @@ class VROverlay {
     vr.overlay.SetOverlayFromFile(this.handle, path)
   }
 
-  transformTrackedDeviceRelative (trackedDevice, {x, y, z}) {
-    vr.overlay.SetOverlayTransformTrackedDeviceRelative(this.handle, trackedDevice, VRVec3.HmdMatrix34(x, y, z))
+  transformAbsolute (matrix, origin = 1) {
+    if (!(matrix instanceof Matrix3x4)) {
+      if (!(matrix instanceof Vector3)) {
+        matrix = Matrix3x4.fromTransform({ T: new Vector3(matrix.x, matrix.y, matrix.z) })
+      } else {
+        matrix = Matrix3x4.fromTransform({ T: matrix })
+      }
+    }
+
+    vr.overlay.SetOverlayTransformAbsolute(this.handle, origin, matrix.HmdMatrix34)
   }
 
-  /*
-  notes on how this matrix works
-  [
-    [ Sx, Rx, A, X ],
-    [ Ry, Sy, ?, Y ],
-    [ Rz, Rz, Sz, Z ],
-  ]
+  transformTrackedDeviceRelative (trackedDevice, matrix) {
+    if (!(matrix instanceof Matrix3x4)) {
+      if (!(matrix instanceof Vector3)) {
+        matrix = Matrix3x4.fromTransform({ T: new Vector3(matrix.x, matrix.y, matrix.z) })
+      } else {
+        matrix = Matrix3x4.fromTransform({ T: matrix })
+      }
+    }
 
-  Sx) Scale
-  Rx) Rotation
-
-
-  A) around -30 or +30, this will pick which eye this renders to?
-  B) 
-  */
-  transformTrackedDeviceRelativeMatrix (trackedDevice, matrix) {
-    vr.overlay.SetOverlayTransformTrackedDeviceRelative(this.handle, trackedDevice, matrix)
+    vr.overlay.SetOverlayTransformTrackedDeviceRelative(this.handle, trackedDevice, matrix.HmdMatrix34)
   }
 
-  transformAbsolute ({x, y, z}) {
-    this._pos = VRVec3.HmdMatrix34(x, y, z)
-    vr.overlay.SetOverlayTransformAbsolute(this.handle, this._pos)
-  }
+  transform ({position = Vector3.zero, rotation = Quaternion.identity, scale = Vector3.one, mode = this.positionMode, relativeDevice = this.relativeDevice} = {}) {
+    const m = Matrix3x4.fromTransform({ T: position, rotation, scale })
 
-  set position (v) {
-    this.transformTrackedDeviceRelative(0, VRVec3.HmdMatrix34(v))
-  }
-
-  get position () {
-    return this._pos
-  }
-
-  set rotation (v) {
-    this.transformAbsolute(this._pos)
+    if (mode === 'relative') {
+      vr.overlay.SetOverlayTransformTrackedDeviceRelative(this.handle, relativeDevice, m.HmdMatrix34)
+    } else {
+      vr.overlay.SetOverlayTransformAbsolute(this.handle, m.HmdMatrix34)
+    }
   }
 
   get width () {
