@@ -65,6 +65,7 @@ NAN_MODULE_INIT(IVROverlay::Init) {
     SET_METHOD(SetOverlayTextureFromBuffer);
     
     SET_METHOD(SetOverlayTransformTrackedDeviceRelative);
+    SET_METHOD(SetOverlayTransformAbsolute);
     // target->Set("SetOverlayWidthInMeters", SetOverlayWidthInMeters);
 
     SET_METHOD(Internals);
@@ -148,6 +149,18 @@ NAN_METHOD(IVROverlay::ShowOverlay) {
     CHECK_ERROR(err);
 }
 
+NAN_METHOD(IVROverlay::HideOverlay) {
+    if (info.Length() != 1) {
+        Nan::ThrowError("Wrong number of arguments.");
+        return;
+    }
+
+    vr::VROverlayError err;    
+    err = vr::VROverlay()->HideOverlay(HND_OVERLAY(info[0]));
+    
+    CHECK_ERROR(err);
+}
+
 NAN_METHOD(IVROverlay::SetOverlayFromFile) {
     if (info.Length() != 2) {
         Nan::ThrowError("Wrong number of arguments.");
@@ -172,11 +185,11 @@ NAN_METHOD(IVROverlay::SetOverlayTextureFromBuffer) {
         return;
     }
 
-    Local<ArrayBufferView> input = info[1].As<ArrayBufferView>();
 
     uint32_t width = info[2]->Uint32Value();
     uint32_t height = info[3]->Uint32Value();
 
+    Local<ArrayBufferView> input = info[1].As<ArrayBufferView>();
     Nan::TypedArrayContents<uint8_t> buf(input);
 
     vr::Texture_t tex = getTexture(*buf, width, height);
@@ -187,11 +200,34 @@ NAN_METHOD(IVROverlay::SetOverlayTextureFromBuffer) {
 }
 
 NAN_METHOD(IVROverlay::SetOverlayTransformTrackedDeviceRelative) {
-
     vr::TrackedDeviceIndex_t trackedDevice = info[1]->Uint32Value();
     vr::HmdMatrix34_t transform = decodeVec3x4(info[2]);
 
     vr::VROverlayError err;
     err = vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(HND_OVERLAY(info[0]), trackedDevice, &transform);
-    checkError(err, "SetOverlayTransformTrackedDeviceRelative failed");
+    CHECK_ERROR(err);
+}
+
+NAN_METHOD(IVROverlay::SetOverlayTransformAbsolute) {
+    vr::ETrackingUniverseOrigin origin = (vr::ETrackingUniverseOrigin)info[1]->Uint32Value();
+    vr::HmdMatrix34_t transform = decodeVec3x4(info[2]);
+
+    vr::VROverlayError err;
+    err = vr::VROverlay()->SetOverlayTransformAbsolute(HND_OVERLAY(info[0]), origin, &transform);
+    CHECK_ERROR(err);
+}
+
+NAN_METHOD(IVROverlay::SetOverlayAlpha) {
+    float val = (float)info[1]->NumberValue();
+    vr::VROverlayError err;
+    err = vr::VROverlay()->SetOverlayAlpha(HND_OVERLAY(info[0]), val);
+    CHECK_ERROR(err);
+}
+
+NAN_METHOD(IVROverlay::GetOverlayAlpha) {
+    float alpha = 0.F;
+    vr::VROverlayError err = vr::VROverlay()->GetOverlayAlpha(HND_OVERLAY(info[0]), &alpha);
+    CHECK_ERROR(err);
+
+    info.GetReturnValue().Set(Nan::New<Number>(alpha));
 }

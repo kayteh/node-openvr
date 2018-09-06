@@ -31,18 +31,17 @@ class IVROverlay : public Nan::ObjectWrap {
 
         static NAN_METHOD(CreateOverlay);
 
-        // static NAN_METHOD(SetOverlayAlpha);
+        static NAN_METHOD(GetOverlayAlpha);
+        static NAN_METHOD(SetOverlayAlpha);
+
         static NAN_METHOD(SetOverlayTextureFromBuffer);
         static NAN_METHOD(SetOverlayFromFile);
-        // static NAN_METHOD(SetOverlayTransformAbsolute);
+        static NAN_METHOD(SetOverlayTransformAbsolute);
         static NAN_METHOD(SetOverlayTransformTrackedDeviceRelative);
         // static NAN_METHOD(SetOverlayWidthInMeters);
  
         static NAN_METHOD(ShowOverlay);
-
-        #ifdef TEST_METHODS
-        static NAN_METHOD(TestHandle);
-        #endif
+        static NAN_METHOD(HideOverlay);
 
         static inline Nan::Persistent<v8::Function>& constructor() {
             static Nan::Persistent<v8::Function> the_constructor;
