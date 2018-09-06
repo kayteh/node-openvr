@@ -35,6 +35,7 @@ NAN_MODULE_INIT(IVRSystem::Init)
   Nan::SetPrototypeMethod(tpl, "IsDisplayOnDesktop", IsDisplayOnDesktop);
   Nan::SetPrototypeMethod(tpl, "SetDisplayVisibility", SetDisplayVisibility);
   Nan::SetPrototypeMethod(tpl, "GetDeviceToAbsoluteTrackingPose", GetDeviceToAbsoluteTrackingPose);
+  Nan::SetPrototypeMethod(tpl, "GetDeviceToAbsoluteTrackingPoseAlt", GetDeviceToAbsoluteTrackingPoseAlt);
   Nan::SetPrototypeMethod(tpl, "ResetSeatedZeroPose", ResetSeatedZeroPose);
   Nan::SetPrototypeMethod(tpl, "GetSeatedZeroPoseToStandingAbsoluteTrackingPose", GetSeatedZeroPoseToStandingAbsoluteTrackingPose);
   Nan::SetPrototypeMethod(tpl, "GetRawZeroPoseToStandingAbsoluteTrackingPose", GetRawZeroPoseToStandingAbsoluteTrackingPose);
@@ -56,6 +57,8 @@ NAN_MODULE_INIT(IVRSystem::Init)
   /// virtual HmdMatrix34_t GetMatrix34TrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
   /// virtual uint32_t GetStringTrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, VR_OUT_STRING() char *pchValue, uint32_t unBufferSize, ETrackedPropertyError *pError = 0L ) = 0;
   Nan::SetPrototypeMethod(tpl, "GetStringTrackedDeviceProperty", GetStringTrackedDeviceProperty);
+  Nan::SetPrototypeMethod(tpl, "GetBoolTrackedDeviceProperty", GetBoolTrackedDeviceProperty);
+  Nan::SetPrototypeMethod(tpl, "GetFloatTrackedDeviceProperty", GetFloatTrackedDeviceProperty);
   
   /// virtual const char *GetPropErrorNameFromEnum( ETrackedPropertyError error ) = 0;
   /// virtual bool PollNextEvent( VREvent_t *pEvent, uint32_t uncbVREvent ) = 0;
@@ -547,6 +550,58 @@ NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPose)
   }
 }
 
+NAN_METHOD(IVRSystem::GetDeviceToAbsoluteTrackingPoseAlt)
+{
+  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+
+  if (info.Length() != 1)
+  {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  if (!info[0]->IsNumber())
+  {
+    Nan::ThrowTypeError("Argument[0] must be a number (ETrackingUniverseOrigin).");
+    return;
+  }
+
+  uint32_t nOrigin = info[0]->Uint32Value();
+  if (nOrigin >= 3)
+  {
+    Nan::ThrowTypeError("Argument[0] was out of enum range (ETrackingUniverseOrigin).");
+    return;
+  }
+
+  vr::ETrackingUniverseOrigin eOrigin = static_cast<vr::ETrackingUniverseOrigin>(nOrigin);
+
+  float fSecondsSinceLastVsync;
+  obj->self_->GetTimeSinceLastVsync( &fSecondsSinceLastVsync, NULL );
+  const float fDisplayFrequency = obj->self_->GetFloatTrackedDeviceProperty( vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_DisplayFrequency_Float );
+  const float fFrameDuration = 1.f / fDisplayFrequency;
+  const float fVsyncToPhotons = obj->self_->GetFloatTrackedDeviceProperty( vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SecondsFromVsyncToPhotons_Float );
+  const float fPredictedSecondsToPhotonsFromNow = fFrameDuration - fSecondsSinceLastVsync + fVsyncToPhotons;
+
+  TrackedDevicePoseArray trackedDevicePoseArray;
+  obj->self_->GetDeviceToAbsoluteTrackingPose(
+    eOrigin, fPredictedSecondsToPhotonsFromNow, trackedDevicePoseArray.data(),
+    static_cast<uint32_t>(trackedDevicePoseArray.size())
+  );
+
+  auto poseData = trackedDevicePoseArray.data();
+
+  auto poses = v8::Object::New(v8::Isolate::GetCurrent());
+  
+  for (int device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
+    // convert pose to HmdMatrix34?
+    if (poseData[device].bPoseIsValid) {
+      poses->Set(Nan::New<Number>(device), encode<vr::HmdMatrix34_t>(poseData[device].mDeviceToAbsoluteTracking));
+    }
+  }
+
+  info.GetReturnValue().Set(poses);
+}
+
 //=============================================================================
 /// virtual void ResetSeatedZeroPose() = 0;
 NAN_METHOD(IVRSystem::ResetSeatedZeroPose)
@@ -650,9 +705,12 @@ NAN_METHOD(IVRSystem::GetSortedTrackedDeviceIndicesOfClass)
 
   vr::ETrackedDeviceClass eTrackedDeviceClass =
     static_cast<vr::ETrackedDeviceClass>(nTrackedDeviceClass);
+    
   TrackedDeviceIndexArray trackedDeviceIndexArray;
+
   uint32_t nDeviceIndices = obj->self_->GetSortedTrackedDeviceIndicesOfClass(
-    eTrackedDeviceClass, trackedDeviceIndexArray.data(),
+    eTrackedDeviceClass)
+    , trackedDeviceIndexArray.data(),
     static_cast<uint32_t>(trackedDeviceIndexArray.size()),
     unRelativeToTrackedDeviceIndex
   );
@@ -911,6 +969,77 @@ NAN_METHOD(IVRSystem::GetStringTrackedDeviceProperty) {
 		Nan::ThrowError("GetStringTrackedDeviceProperty Failed: " + err);
 	} else {
     MaybeLocal<String> result = Nan::New<String>(buf);
+    info.GetReturnValue().Set(result.ToLocalChecked());
+	}
+
+  return;
+}
+
+NAN_METHOD(IVRSystem::GetFloatTrackedDeviceProperty) {
+  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+  
+  if (info.Length() != 2) {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  if (!info[0]->IsNumber()) {
+    Nan::ThrowTypeError("First argument must be a tracked device index (TrackedDeviceIndex_t)");
+    return;
+  }
+
+  if (!info[1]->IsNumber()) {
+    Nan::ThrowTypeError("Second argument must be a tracked device property (TrackedDeviceProperty)");
+    return;
+  }
+
+	vr::TrackedPropertyError err;
+
+	float buf = obj->self_->GetFloatTrackedDeviceProperty(
+    (vr::TrackedDeviceIndex_t)info[0]->Uint32Value(), 
+    (vr::ETrackedDeviceProperty)info[1]->Uint32Value(),
+    &err
+  );
+  
+	if (err != vr::TrackedProp_Success) {
+		Nan::ThrowError("GetFloatTrackedDeviceProperty Failed: " + err);
+	} else {
+    MaybeLocal<Number> result = Nan::New<Number>(buf);
+    info.GetReturnValue().Set(result.ToLocalChecked());
+	}
+
+  return;
+}
+
+NAN_METHOD(IVRSystem::GetBoolTrackedDeviceProperty) {
+  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+  
+  if (info.Length() != 2) {
+    Nan::ThrowError("Wrong number of arguments.");
+    return;
+  }
+
+  if (!info[0]->IsNumber()) {
+    Nan::ThrowTypeError("First argument must be a tracked device index (TrackedDeviceIndex_t)");
+    return;
+  }
+
+  if (!info[1]->IsNumber()) {
+    Nan::ThrowTypeError("Second argument must be a tracked device property (TrackedDeviceProperty)");
+    return;
+  }
+
+	vr::TrackedPropertyError err;
+	bool buf = obj->self_->GetBoolTrackedDeviceProperty(
+     (vr::TrackedDeviceIndex_t)info[0]->Uint32Value(), 
+     (vr::ETrackedDeviceProperty)info[1]->Uint32Value(),
+     &err
+    );
+  
+	if (err != vr::TrackedProp_Success) {
+		Nan::ThrowError("GetBoolTrackedDeviceProperty Failed: " + err);
+	} else {
+    MaybeLocal<Boolean> result = Nan::New<Boolean>(buf);
     info.GetReturnValue().Set(result.ToLocalChecked());
 	}
 

@@ -60,6 +60,7 @@ private:
 
   /// virtual void GetDeviceToAbsoluteTrackingPose( ETrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow, VR_ARRAY_COUNT(unTrackedDevicePoseArrayCount) TrackedDevicePose_t *pTrackedDevicePoseArray, uint32_t unTrackedDevicePoseArrayCount ) = 0;
   static NAN_METHOD(GetDeviceToAbsoluteTrackingPose);
+  static NAN_METHOD(GetDeviceToAbsoluteTrackingPoseAlt);
 
   /// virtual void ResetSeatedZeroPose() = 0;
   static NAN_METHOD(ResetSeatedZeroPose);
@@ -86,6 +87,8 @@ private:
   static NAN_METHOD(GetTrackedDeviceClass);
   static NAN_METHOD(GetControllerState);
   static NAN_METHOD(GetStringTrackedDeviceProperty);
+  static NAN_METHOD(GetBoolTrackedDeviceProperty);
+  static NAN_METHOD(GetFloatTrackedDeviceProperty);
 
   /// virtual bool IsTrackedDeviceConnected( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
   /// virtual bool GetBoolTrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
