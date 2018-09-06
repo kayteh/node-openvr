@@ -25,13 +25,17 @@
     "install": "node-gyp rebuild",
     "r": "node-gyp rebuild",
     "s": "node samples/image-overlay/index.js",
-    "rs": "npm run r && npm run s"
+    "rs": "npm run r && npm run s",
+    "t": "jest"
   },
   "engines": {
     "node": ">=3.0.0"
   },
   "dependencies": {
     "bindings": "^1.3.0",
-    "nan": "^2.10.0"
+    "nan": "^2.11.0"
+  },
+  "devDependencies": {
+    "jest": "^23.5.0"
   }
 }
