@@ -1,4 +1,4 @@
-const vr = require('..')
+const vr = require('../src')
 const { Vector3, Matrix3x4, Quaternion } = require('../tools')
 
 class VROverlay {

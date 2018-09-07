@@ -4,6 +4,7 @@
   "description": "Node bindings to OpenVR",
   "homepage": "https://github.com/kayteh/node-openvr#readme",
   "license": "MIT",
+  "main": "untyped/main.js",
   "keywords": [
     "glfw",
     "opengl",
@@ -20,13 +21,20 @@
   "bugs": {
     "url": "https://github.com/kayteh/node-openvr/issues"
   },
-  "main": "index.js",
   "scripts": {
-    "install": "node-gyp rebuild",
-    "r": "node-gyp rebuild",
-    "s": "node samples/image-overlay/index.js",
-    "rs": "npm run r && npm run s",
-    "t": "jest"
+    "install": "npm-run-all clean:binding build:gyp",
+    "sample": "node samples/image-overlay/index.js",
+    "test": "jest --coverage",
+    "clean:binding": "rimraf build bin",
+    "clean:headers": "rimraf headers.js",
+    "build": "npm-run-all --parallel build:*",
+    "build:gyp": "node-gyp rebuild",
+    "build:headers": "node ./build-headers.js",
+    "build:strip-flow": "flow-remove-types --pretty src/ --out-dir untyped/",
+    "watch": "npm-run-all --parallel watch:*",
+    "watch:flow": "nodemon --watch src/**/*.js --exec yarn build:strip-flow",
+    "watch:gyp": "nodemon --watch src/binding --exec yarn build:gyp -e cpp,h",
+    "pre-commit": "npm-run-all clean:* build"
   },
   "engines": {
     "node": ">=3.0.0"
@@ -36,6 +44,13 @@
     "nan": "^2.11.0"
   },
   "devDependencies": {
-    "jest": "^23.5.0"
+    "flow-bin": "^0.80.0",
+    "flow-remove-types": "^1.2.3",
+    "jest": "^23.5.0",
+    "jest-flow-transform": "^1.0.1",
+    "nodemon": "^1.18.4",
+    "npm-run-all": "^4.1.3",
+    "pre-commit": "^1.2.2",
+    "rimraf": "^2.6.2"
   }
 }

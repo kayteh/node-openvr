@@ -705,12 +705,11 @@ NAN_METHOD(IVRSystem::GetSortedTrackedDeviceIndicesOfClass)
 
   vr::ETrackedDeviceClass eTrackedDeviceClass =
     static_cast<vr::ETrackedDeviceClass>(nTrackedDeviceClass);
-    
+
   TrackedDeviceIndexArray trackedDeviceIndexArray;
 
   uint32_t nDeviceIndices = obj->self_->GetSortedTrackedDeviceIndicesOfClass(
-    eTrackedDeviceClass)
-    , trackedDeviceIndexArray.data(),
+    eTrackedDeviceClass, trackedDeviceIndexArray.data(),
     static_cast<uint32_t>(trackedDeviceIndexArray.size()),
     unRelativeToTrackedDeviceIndex
   );

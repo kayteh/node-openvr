@@ -14,11 +14,11 @@
         'VERSION=1.0.16'
       ],
       'sources': [
-        'src/bindings.cpp',
-        'src/ivrsystem.cpp',
-        'src/ivrcompositor.cpp',
-        'src/ivroverlay.cpp',
-        'src/openvr.cpp'
+        'src/binding/bindings.cpp',
+        'src/binding/ivrsystem.cpp',
+        'src/binding/ivrcompositor.cpp',
+        'src/binding/ivroverlay.cpp',
+        'src/binding/openvr.cpp'
       ],
       'include_dirs': [
         "<!(node -e \"require('nan')\")",
