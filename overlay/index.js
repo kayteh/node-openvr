@@ -1,5 +1,5 @@
-const vr = require('../src')
-const { Vector3, Matrix3x4, Quaternion } = require('../tools')
+const vr = require('../untyped')
+const { Vector3, Matrix3x4, Quaternion } = vr.math
 
 class VROverlay {
   constructor ({system, key, name, skipChecks = false, handle = null}) {
@@ -114,6 +114,13 @@ class VROverlay {
 
   set width (v) {
     vr.overlay.SetOverlayWidthInMeters(this.handle, v)
+  }
+
+  nextEvent () {
+    const evt = vr.overlay.PollNextOverlayEvent(this.handle)
+    if (evt != null && evt !== false) {
+      return evt
+    }
   }
 }
 
