@@ -35,7 +35,6 @@
     "watch:flow": "nodemon --watch src/**/*.js --exec yarn build:strip-flow",
     "watch:gyp": "nodemon --watch src/binding --exec yarn build:gyp -e cpp,h"
   },
-  "pre-commit": ["build"],
   "engines": {
     "node": ">=3.0.0"
   },
@@ -50,7 +49,6 @@
     "jest-flow-transform": "^1.0.1",
     "nodemon": "^1.18.4",
     "npm-run-all": "^4.1.3",
-    "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2"
   }
 }
