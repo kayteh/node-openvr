@@ -33,7 +33,7 @@
     "build:strip-flow": "flow-remove-types --pretty src/ --out-dir untyped/",
     "watch": "npm-run-all --parallel watch:*",
     "watch:flow": "nodemon --watch src/**/*.js --exec yarn build:strip-flow",
-    "watch:gyp": "nodemon --watch src/binding --exec yarn build:gyp -e cpp,h",
+    "watch:gyp": "nodemon --watch src/binding --exec yarn build:gyp -e cpp,h"
   },
   "pre-commit": ["build"],
   "engines": {
