@@ -5,5 +5,13 @@ const math = require('./math')
 module.exports = {
   ...openvr,
   ...headers,
-  math
+  math,
+
+  keyFromEnum (enum_, val) {
+    for (let en in enum_) {
+      if (enum_[en] === val) return en
+    }
+
+    return undefined
+  }
 }
