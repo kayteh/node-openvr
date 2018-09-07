@@ -5,6 +5,7 @@
 #include <node.h>
 #include <openvr.h>
 #include <nan.h>
+#include "other_util.h"
 
 using namespace v8;
 
@@ -48,6 +49,7 @@ NAN_MODULE_INIT(IVRSystem::Init)
 
   Nan::SetPrototypeMethod(tpl, "GetTrackedDeviceClass", GetTrackedDeviceClass);
   Nan::SetPrototypeMethod(tpl, "GetControllerState", GetControllerState);
+  Nan::SetPrototypeMethod(tpl, "PollNextEvent", PollNextEvent);
 
   /// virtual bool IsTrackedDeviceConnected( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
   /// virtual bool GetBoolTrackedDeviceProperty( vr::TrackedDeviceIndex_t unDeviceIndex, ETrackedDeviceProperty prop, ETrackedPropertyError *pError = 0L ) = 0;
@@ -852,6 +854,15 @@ NAN_METHOD(IVRSystem::GetControllerState)
         }
       }
     }
+  }
+}
+
+NAN_METHOD(IVRSystem::PollNextEvent) {
+  IVRSystem* obj = ObjectWrap::Unwrap<IVRSystem>(info.Holder());
+  vr::VREvent_t pEvent;
+
+  while(obj->self_->PollNextEvent(&pEvent, sizeof(pEvent)) != false) {
+      info.GetReturnValue().Set(encodeVREvent(pEvent));
   }
 }
 

@@ -1,6 +1,8 @@
 #ifndef NODE_IVRSYSTEM_H
 #define NODE_IVRSYSTEM_H
 
+// #include "other_util.h"
+
 #include <nan.h>
 #include <v8.h>
 
@@ -85,6 +87,7 @@ private:
 
   /// virtual ETrackedDeviceClass GetTrackedDeviceClass( vr::TrackedDeviceIndex_t unDeviceIndex ) = 0;
   static NAN_METHOD(GetTrackedDeviceClass);
+  static NAN_METHOD(PollNextEvent);
   static NAN_METHOD(GetControllerState);
   static NAN_METHOD(GetStringTrackedDeviceProperty);
   static NAN_METHOD(GetBoolTrackedDeviceProperty);

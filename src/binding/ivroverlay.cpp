@@ -68,6 +68,8 @@ NAN_MODULE_INIT(IVROverlay::Init) {
     SET_METHOD(SetOverlayTransformAbsolute);
     // target->Set("SetOverlayWidthInMeters", SetOverlayWidthInMeters);
 
+    SET_METHOD(PollNextOverlayEvent);
+
     SET_METHOD(Internals);
 }
 
@@ -230,4 +232,12 @@ NAN_METHOD(IVROverlay::GetOverlayAlpha) {
     CHECK_ERROR(err);
 
     info.GetReturnValue().Set(Nan::New<Number>(alpha));
+}
+
+NAN_METHOD(IVROverlay::PollNextOverlayEvent) {
+    vr::VREvent_t pEvent;
+
+    while(vr::VROverlay()->PollNextOverlayEvent(HND_OVERLAY(info[0]), &pEvent, sizeof(pEvent)) != false) {
+        info.GetReturnValue().Set(encodeVREvent(pEvent));
+    }
 }

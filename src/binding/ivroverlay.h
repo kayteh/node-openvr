@@ -43,6 +43,8 @@ class IVROverlay : public Nan::ObjectWrap {
         static NAN_METHOD(ShowOverlay);
         static NAN_METHOD(HideOverlay);
 
+        static NAN_METHOD(PollNextOverlayEvent);
+
         static inline Nan::Persistent<v8::Function>& constructor() {
             static Nan::Persistent<v8::Function> the_constructor;
             return the_constructor;
