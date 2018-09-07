@@ -1,5 +1,4 @@
-const vr = require('../../index.js')
-const vrTools = require('../../tools')
+const vr = require('../../untyped/index')
 const VROverlay = require('../../overlay')
 // const path = require('path')
 
@@ -33,7 +32,7 @@ class ImageOverlay {
 
   init () {
     this.system = vr.system.VR_Init(vr.EVRApplicationType.VRApplication_Overlay)
-    vrTools.printAgent(this.system)
+    // vrTools.printAgent(this.system)
 
     this.overlay = new VROverlay({ system: this.system, key: 'electronvr.sample' })
     // this.overlay.width = 1
@@ -43,8 +42,28 @@ class ImageOverlay {
     this.overlay.setTextureFromBuffer(this.generateGradient(size, size), { width: size, height: size })
     console.log('set texture done')
 
+    this.testEvent()
+
     this.overlay.show()
   }
+
+  async testEvent () {
+    while (true) {
+      const d = await this.overlay.nextEvent()
+      if (d == null) {
+        await wait(1000/15)
+        continue
+      }
+      d.eventType = vr.keyFromEnum(vr.EVREventType, d.eventType)
+      console.log(d)
+    }
+  }
+}
+
+function wait(time) {
+  return new Promise((resolve) => {
+    setTimeout(() => { resolve() }, time)
+  })
 }
 
 async function run () {
