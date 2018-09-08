@@ -40,7 +40,20 @@
 
 inline static vr::HmdMatrix34_t decodeVec3x4(const v8::Local<v8::Value> value) {
   vr::HmdMatrix34_t result;
-  const auto matrix = value->ToObject();
+
+  // We need to know if this is a node Matrix3x4 or not,
+  // if it iis, convert it to the array form.
+  auto matrixObj = value->ToObject();
+
+  // get the prototype
+  V8STR(matrixObj->GetConstructorName(), name);
+  if (std::strcmp(name, "Matrix3x4") == 0) {
+    // this is the matrix3x4 and not an array, so let's call it's array extraction
+    matrixObj = Nan::Get(matrixObj, Nan::New("data").ToLocalChecked()).ToLocalChecked()->ToObject();
+  }
+
+  // apparently this being const is required.
+  const auto matrix = matrixObj;
 
   for (uint32_t rowIdx = 0; rowIdx < 3; ++rowIdx)
   {

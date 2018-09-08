@@ -1,15 +1,17 @@
-const openvr = require('bindings')('openvr')
-const headers = require('../headers')
+const ovr = require('./src/binding')
+const headers = require('./headers')
+
 const math = require('./math')
 
 module.exports = {
-  ...openvr,
+  ...ovr,
   ...headers,
   math,
 
   keyFromEnum (enum_, val) {
     for (let en in enum_) {
-      if (enum_[en] === val) return en
+      const t = enum_[en]
+      if (t === val) return en
     }
 
     return undefined

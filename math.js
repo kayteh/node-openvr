@@ -1,59 +1,33 @@
-// @flow
+//
 // so this is a megafile to prevent circular dependencies.
 
 /**
  * Number.EPSILON is too accurate, this is less accurate but close enough.
  */
-const EPSILON: number = 1e-5
+const EPSILON = 1e-5
 
 /**
  * ARCPI is badly named, but is Math.PI / 180
  */
-const ARCPI: number = 0.017453292519943295 
+const ARCPI = 0.017453292519943295
 
-function deg2rad (val: number): number {
+function deg2rad (val) {
   return val * ARCPI
 }
 
-function rad2deg (val: number): number {
+function rad2deg (val) {
   return val / ARCPI
 }
 
-function clamp (x: number, f: number, c: number): number {
+function clamp (x, f, c) {
   return Math.min(c, Math.max(f, x))
 }
 
-type Matrix = Array<Array<number>>
-type TRS = {
-  T: Vector3,
-  R: Quaternion|Vector3,
-  S: Vector3
+function saturate (x) {
+  return clamp(x, 0, 1)
 }
 
-type TRSHuman = {
-  T?: Vector3,
-  R?: Quaternion|Vector3,
-  S?: Vector3,
-  translation?: Vector3,
-  rotation?: Quaternion|Vector3,
-  scale?: Vector3
-}
-
-type vec3 = {
-  x: number,
-  y: number,
-  z: number
-}
-
-
-type vec4 = {
-  x: number,
-  y: number,
-  z: number,
-  w: number
-}
-
-function isVec(n: number, obj: Object): boolean {
+function isVec (n, obj) {
   const check = ['x', 'y', 'z', 'w'].slice(0, n)
   for (let k of check) {
     if (!(k in obj)) {
@@ -69,11 +43,6 @@ function isVec(n: number, obj: Object): boolean {
  * Honestly, I'm very new to linear algebra and geometry, this is all extremely new to me.
  */
 class Quaternion {
-  x: number
-  y: number
-  z: number
-  w: number
-  
   /**
    * Constructs a quaternion from XYZW (not WXYZ because I'm probably being weird.)
    * @param {number} x
@@ -81,7 +50,7 @@ class Quaternion {
    * @param {number} z
    * @param {number} w
    */
-  constructor (x: number, y: number, z: number, w: number) {
+  constructor (x, y, z, w) {
     this.x = x
     this.y = y
     this.z = z
@@ -91,22 +60,22 @@ class Quaternion {
   /**
    * The identity of a Quaternion is 0,0,0,1. This returns it.
    */
-  static get identity (): Quaternion {
+  static get identity () {
     return new Quaternion(0, 0, 0, 1)
   }
 
   /**
    * Shorthand getter for the normalized product of this Quaternion.
    */
-  get normalized (): Quaternion {
+  get normalized () {
     return Quaternion.normalize(this)
   }
 
   /**
    * Magnitude is sqrt(Quaternion^2). Used for normalization.
    */
-  get magnitude (): number {
-    const {x, y, z, w} = this
+  get magnitude () {
+    const { x, y, z, w } = this
     return Math.sqrt(x * x + y * y + z * z + w * w)
   }
 
@@ -116,7 +85,7 @@ class Quaternion {
    * Dividing each element by the length scaler will turn this vector normalized.
    * @param {Quaternion} quat Quaternion to normalize.
    */
-  static normalize (quat: Quaternion): Quaternion {
+  static normalize (quat) {
     const sqrtQuat = quat.magnitude
 
     return new Quaternion(
@@ -137,7 +106,7 @@ class Quaternion {
    * @param {Vector3} src the source position (the relative identity point)
    * @param {Vector3} dest the destination position
    */
-  static lookAt (src: Vector3, dest: Vector3): Quaternion {
+  static lookAt (src, dest) {
     const fwd = Vector3.normalize(src.sub(dest))
     const rotAxis = Vector3.cross(Vector3.forward, fwd).ovr2jpl
     const dot = Vector3.dot(Vector3.forward, fwd)
@@ -155,7 +124,7 @@ class Quaternion {
    * Black magic to me, honestly.
    * @param {Array} mat 3x3 rotation matrix in the form of arrays
    */
-  static fromRotationMatrix (mat: Matrix): Quaternion {
+  static fromRotationMatrix (mat) {
     const [[m00, m10, m20], [m01, m11, m21], [m02, m12, m22]] = mat
 
     const w = Math.sqrt(1 + m00 + m11 + m22) / 2
@@ -183,7 +152,7 @@ class Quaternion {
    *
    * @param {Vector3} vec A Vector3 in degrees in JPL right-handed mode.
    */
-  static fromEulerTait (vec: Vector3): Quaternion {
+  static fromEulerTait (vec) {
     vec = vec.radians
     const halfVec = vec.mul(0.5)
 
@@ -217,7 +186,7 @@ class Quaternion {
    *
    * @param {Vector3} vec A Vector3 in degrees in OpenVR right-handed mode
    */
-  static fromEuler (vec: Vector3): Quaternion {
+  static fromEuler (vec) {
     return Quaternion.fromEulerTait(vec.ovr2jpl)
   }
 
@@ -225,7 +194,7 @@ class Quaternion {
    * Only threequals will pass, as opposed to within an epsilon for eq.
    * @param {Quaternion} q Quaternion to match against
    */
-  eqeqeq (q: Quaternion): boolean {
+  eqeqeq (q) {
     return q.x === this.x && q.y === this.y && q.z === this.z && q.w === this.w
   }
 
@@ -234,7 +203,7 @@ class Quaternion {
    * @param {Quaternion} q Quaternion to match against
    * @param {number|null} epsilon Rounding error correction. Defautls to 0.005
    */
-  eq (q: Quaternion, epsilon?: number = EPSILON): boolean {
+  eq (q, epsilon = EPSILON) {
     return (Math.abs(q.x - this.x) < epsilon) &&
       (Math.abs(q.y - this.y) < epsilon) &&
       (Math.abs(q.z - this.z) < epsilon) &&
@@ -251,7 +220,7 @@ class Quaternion {
    * @param {number|null} z
    * @param {number|null} w
    */
-  mul (x: Quaternion|vec4|number, y?: number, z?: number, w?: number) {
+  mul (x, y, z, w) {
     if (typeof x === 'number' && typeof y !== 'number' && typeof z !== 'number' && typeof w !== 'number') {
       // vector x linear math, ezgg
       // console.debug('Q.mul(x)')
@@ -259,7 +228,7 @@ class Quaternion {
     } else if (typeof x !== 'number' && isVec(4, x)) {
       // vector math!
       // console.debug('Q.mul(vec4)')
-      const v: vec4 = x
+      const v = x
       return new Quaternion(this.x * v.x, this.y * v.y, this.z * v.z, this.w * v.w)
     } else if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number' && typeof w === 'number') {
       // console.debug('Q.mul(x,y,z,w)')
@@ -267,7 +236,7 @@ class Quaternion {
     }
 
     // console.debug('Q.mul(INVALID)')
-    throw new TypeError("Input arguments were invalid.")
+    throw new TypeError('Input arguments were invalid.')
   }
 
   /**
@@ -275,22 +244,22 @@ class Quaternion {
    * The math included is JPL-handed, but we convert it to OpenVR at the end.
    * I'm not fully sure what this is.
    */
-  get eulerAngle (): Vector3 {
+  get eulerAngle () {
     const { w, x, y, z } = this
 
     // X
-    const t0: number = 2 * (w * x + y * z)
-    const t1: number = 1 - 2 * (x * x + y * y)
-    const vx: number = Math.atan2(t0, t1)
+    const t0 = 2 * (w * x + y * z)
+    const t1 = 1 - 2 * (x * x + y * y)
+    const vx = Math.atan2(t0, t1)
 
     // Y
-    const t2: number = clamp(2 * (w * y - z * x), -1, 1)
-    const vy: number = Math.asin(t2)
+    const t2 = clamp(2 * (w * y - z * x), -1, 1)
+    const vy = Math.asin(t2)
 
     // Z
-    const t3: number = 2 * (w * z + x * y)
-    const t4: number = 1 - 2 * (y * y + z * z)
-    const vz: number = Math.atan2(t3, t4)
+    const t3 = 2 * (w * z + x * y)
+    const t4 = 1 - 2 * (y * y + z * z)
+    const vz = Math.atan2(t3, t4)
 
     return new Vector3(vx, vy, vz).jpl2ovr.degrees
   }
@@ -298,41 +267,20 @@ class Quaternion {
   /**
    * Creates a rotation 3x4 matrix with 4th column zero'd (so effectively 3x3)
    */
-  get rotationMatrix (): Matrix3x4 {
+  get rotationMatrix () {
     const { x, y, z, w } = this
 
-    const xx: number = x * x
-    const xy: number = x * y
-    const xz: number = x * z
-    const xw: number = x * w
+    const xx = x * x
+    const xy = x * y
+    const xz = x * z
+    const xw = x * w
 
-    const yy: number = y * y
-    const yz: number = y * z
-    const yw: number = y * w
+    const yy = y * y
+    const yz = y * z
+    const yw = y * w
 
-    const zz: number = z * z
-    const zw: number = z * w
-
-    const mat: Matrix = [
-      [
-        1 - 2 * (yy + zz), // 0
-        2 * (xy + zw), // 4
-        2 * (xz - yw), // 8
-        0
-      ],
-      [
-        2 * (xy - zw), // 1
-        1 - 2 * (xx + zz), // 5
-        2 * (yz + xw), // 9
-        0
-      ],
-      [
-        2 * (xz + yw), // 2
-        2 * (yz - xw), // 6
-        1 - 2 * (xx + yy), // 10
-        0
-      ]
-    ]
+    const zz = z * z
+    const zw = z * w
 
     return new Matrix3x4([
       [
@@ -361,10 +309,7 @@ class Quaternion {
  * Matrix3x4 is a JS analogue of HmdMatrix34_t
  */
 class Matrix3x4 {
-  
-  data: Matrix
-
-  constructor (from: Matrix) {
+  constructor (from) {
     // console.log({from})
     if (from.length !== 3 || from[0].length !== 4 || from[1].length !== 4 || from[2].length !== 4) {
       throw new TypeError('Matrix3x4 requires 3 sets of 4 linear numbers')
@@ -376,7 +321,7 @@ class Matrix3x4 {
   /**
    * The identity matrix
    */
-  static get identity (): Matrix3x4 {
+  static get identity () {
     return Matrix3x4.fromTransform({ T: Vector3.zero, R: Quaternion.identity, S: Vector3.one })
   }
 
@@ -384,25 +329,25 @@ class Matrix3x4 {
    * Quick method for wrapping matrix data in this class.
    * @param {Array} from HmdMatrix34_t arrays or some other generated arrays.
    */
-  static fromArrays (from: Matrix): Matrix3x4 {
+  static fromArrays (from) {
     return new Matrix3x4(from)
   }
 
   /**
    * Creates a Matrix3x4 via TRS data. This is usually what humans would create these with.
    */
-  static fromTransform ({ T, R, S, translation, rotation, scale }: TRSHuman): Matrix3x4 {
+  static fromTransform ({ T, R, S, translation, rotation, scale }) {
     T = T || translation || Vector3.zero
     R = R || rotation || Quaternion.identity
     S = S || scale || Vector3.one
 
-    const tMat: Matrix3x4 = new Matrix3x4([
+    const tMat = new Matrix3x4([
       [0, 0, 0, T.x],
       [0, 0, 0, T.y],
       [0, 0, 0, T.z]
     ])
 
-    let rot: Quaternion
+    let rot
     if (R instanceof Vector3) {
       rot = Quaternion.fromEuler(R)
     } else if (!(R instanceof Quaternion)) {
@@ -411,9 +356,9 @@ class Matrix3x4 {
       rot = R
     }
 
-    const rMat: Matrix3x4 = rot.rotationMatrix
+    const rMat = rot.rotationMatrix
 
-    const sMat: Matrix3x4 = new Matrix3x4([
+    const sMat = new Matrix3x4([
       [S.x, 0, 0, 0],
       [0, S.y, 0, 0],
       [0, 0, S.z, 0]
@@ -426,9 +371,9 @@ class Matrix3x4 {
    * Rotation is input rotation matrix * this matrix.
    * @param {Quaternion|Vector3} R Rotation vector or quaternion. Vector3s will be converted to Quaternions
    */
-  rotate (R: Quaternion|Vector3) {
-    let rot: Quaternion
-    
+  rotate (R) {
+    let rot
+
     if (R instanceof Vector3) {
       rot = Quaternion.fromEuler(R)
     } else if (!(R instanceof Quaternion)) {
@@ -445,7 +390,7 @@ class Matrix3x4 {
    * Multiplies this matrix by another.
    * @param {Matrix3x4} b Target
    */
-  mul (b: Matrix3x4|Matrix): Matrix3x4 {
+  mul (b) {
     if (b instanceof Matrix3x4) {
       b = b.data
     }
@@ -456,7 +401,7 @@ class Matrix3x4 {
    * Adds this matrix to another
    * @param {Matrix3x4} b Target
    */
-  add (b: Matrix3x4|Matrix): Matrix3x4 {
+  add (b) {
     if (b instanceof Matrix3x4) {
       b = b.data
     }
@@ -467,7 +412,7 @@ class Matrix3x4 {
    * Subtracts this matrix from another
    * @param {Matrix3x4} b Target
    */
-  sub (b: Matrix3x4|Matrix): Matrix3x4 {
+  sub (b) {
     if (b instanceof Matrix3x4) {
       b = b.data
     }
@@ -480,13 +425,13 @@ class Matrix3x4 {
    * @param {Array} a src
    * @param {Array} b dest
    */
-  static _mul (a: Matrix, b: Matrix): Matrix3x4 {
+  static _mul (a, b) {
     // console.log({a, b})
 
-    const out: Matrix = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    
+    const out = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+
     // pad b's 3x4 to a 4x4, this is just the identity
-    b[3] = [0,0,0,1]
+    b[3] = [0, 0, 0, 1]
 
     for (var r = 0; r < a.length; ++r) {
       for (var c = 0; c < b[0].length; ++c) {
@@ -508,8 +453,8 @@ class Matrix3x4 {
    * @param {Array} a src
    * @param {Array} b dest
    */
-  static _add (a: Matrix, b: Matrix): Matrix3x4 {
-    const out: Matrix = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+  static _add (a, b) {
+    const out = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
     for (var r = 0; r < a.length; ++r) {
       for (var c = 0; c < b[0].length; ++c) {
@@ -526,8 +471,8 @@ class Matrix3x4 {
    * @param {Array} a src
    * @param {Array} b dest
    */
-  static _sub (a: Matrix, b: Matrix): Matrix3x4 {
-    const out: Matrix = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+  static _sub (a, b) {
+    const out = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
     for (var r = 0; r < a.length; ++r) {
       for (var c = 0; c < b[0].length; ++c) {
@@ -541,46 +486,46 @@ class Matrix3x4 {
   /**
    * Shorthand getter for this.data for HmdMatrix34_t
    */
-  toHmdMatrix34 (): Matrix {
+  toHmdMatrix34 () {
     return this.data
   }
 
   /**
    * Shorthand getter for this.data for HmdMatrix34_t
    */
-  get HmdMatrix34 (): Matrix {
+  get HmdMatrix34 () {
     return this.data
   }
 
-  get flat (): number[] {
+  get flat () {
     return this.data.reduce((acc, val) => acc.concat(val), [])
   }
 
-  eq (b: Matrix3x4): boolean {
+  eq (b) {
     return Matrix3x4._eq(this, b)
   }
 
-  static _eq (ma: Matrix3x4, mb: Matrix3x4): boolean {
-    const a: number[] = ma.flat
-    const b: number[] = mb.flat
+  static _eq (ma, mb) {
+    const a = ma.flat
+    const b = mb.flat
 
     for (let idx in a) {
-      if (Math.abs(a[idx] - b[idx]) > EPSILON) return false
+      if (Math.abs(a[+idx] - b[+idx]) > EPSILON) return false
     }
 
     return true
   }
 
-  eqeqeq (b: Matrix3x4): boolean {
+  eqeqeq (b) {
     return Matrix3x4._eqeqeq(this, b)
   }
 
-  static _eqeqeq (ma: Matrix3x4, mb: Matrix3x4): boolean {
-    const a: number[] = ma.flat
-    const b: number[] = mb.flat
+  static _eqeqeq (ma, mb) {
+    const a = ma.flat
+    const b = mb.flat
 
     for (let idx in a) {
-      if (a[idx] !== b[idx]) return false
+      if (a[+idx] !== b[+idx]) return false
     }
 
     return true
@@ -589,19 +534,19 @@ class Matrix3x4 {
   /**
    * Decompose the matrix into TRS parts.
    */
-  get trs (): TRS {
+  get trs () {
     // copy it so we don't destroy the data
-    const [[a, b, c, d], [e, f, g, h], [i, j, k, l]]: number[][] = [...this.data]
+    const [[a, b, c, d], [e, f, g, h], [i, j, k, l]] = [...this.data]
 
-    const T: Vector3 = new Vector3(d, h, l)
+    const T = new Vector3(d, h, l)
 
-    const S: Vector3 = new Vector3(
+    const S = new Vector3(
       new Vector3(a, e, i).magnitude,
       new Vector3(b, f, j).magnitude,
       new Vector3(c, g, k).magnitude
     )
 
-    const R: Quaternion = Quaternion.fromRotationMatrix([
+    const R = Quaternion.fromRotationMatrix([
       [a / S.x, b / S.y, c / S.z],
       [e / S.x, f / S.y, g / S.z],
       [i / S.x, j / S.y, k / S.z]
@@ -612,55 +557,50 @@ class Matrix3x4 {
 }
 
 class Vector3 {
-  x: number
-  y: number
-  z: number
-  isRadians: boolean|null
-  
-  constructor (x: number, y: number, z: number) {
+  constructor (x, y, z) {
     this.x = x
     this.y = y
     this.z = z
     this.isRadians = null
   }
 
-  static x (x: number): Vector3 {
+  static x (x) {
     return new Vector3(x, x, x)
   }
 
-  static get zero (): Vector3 {
+  static get zero () {
     return new Vector3(0, 0, 0)
   }
 
-  static get one (): Vector3 {
+  static get one () {
     return new Vector3(1, 1, 1)
   }
 
-  static get up (): Vector3 {
+  static get up () {
     return new Vector3(0, 1, 0)
   }
 
-  static get down (): Vector3 {
+  static get down () {
     return new Vector3(0, -1, 0)
   }
 
-  static get forward (): Vector3 {
+  static get forward () {
     return new Vector3(0, 0, -1)
   }
 
-  static get back (): Vector3 {
+  static get back () {
     return new Vector3(0, 0, 1)
   }
 
-  static get right (): Vector3 {
+  static get right () {
     return new Vector3(1, 0, 0)
   }
 
-  static get left (): Vector3 {
+  static get left () {
     return new Vector3(-1, 0, 0)
   }
 
-  static cross (a: Vector3, b: Vector3): Vector3 {
+  static cross (a, b) {
     return new Vector3(
       (a.y * b.z) - (a.z * b.y),
       (a.z * b.x) - (a.x * b.z),
@@ -668,7 +608,7 @@ class Vector3 {
     )
   }
 
-  static dot (a: Vector3, b: Vector3): number {
+  static dot (a, b) {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z)
   }
 
@@ -677,14 +617,13 @@ class Vector3 {
    * XYZ is the [3]rd slots of each row.
    * @param {Matrix3x4|Array} mat HmdMatrix to get position from
    */
-  static positionFromMatrix3x4 (mat: Matrix|Matrix3x4): Vector3 {
-    let matrix: Matrix
+  static positionFromMatrix3x4 (mat) {
+    let matrix
     if (mat instanceof Matrix3x4) {
       matrix = mat.data
     } else {
       matrix = mat
     }
-
 
     return new Vector3(matrix[0][3], matrix[1][3], matrix[2][3])
   }
@@ -692,23 +631,47 @@ class Vector3 {
   /**
    * Shorthand getter for normalizing this vector.
    */
-  get normalized (): Vector3 {
+  get normalized () {
     return Vector3.normalize(this)
   }
 
   /**
    * Shorthand getter for calculating length/magnitude. Used in normalization.
    */
-  get magnitude (): number {
+  get magnitude () {
     const sqVec = this.mul(this)
     return Math.sqrt(sqVec.x + sqVec.y + sqVec.z)
   }
 
+  get r () {
+    return this.x
+  }
+
+  set r (v) {
+    this.x = v
+  }
+
+  get g () {
+    return this.y
+  }
+
+  set g (v) {
+    this.y = v
+  }
+
+  get b () {
+    return this.z
+  }
+
+  set b (v) {
+    this.z = v
+  }
+
   /**
-   * 
-   * @param {Vector3} vec 
+   *
+   * @param {Vector3} vec
    */
-  static normalize (vec: Vector3): Vector3 {
+  static normalize (vec) {
     const sqrtVec = vec.magnitude
 
     return new Vector3(
@@ -718,7 +681,7 @@ class Vector3 {
     )
   }
 
-  get sin (): Vector3 {
+  get sin () {
     return new Vector3(
       Math.sin(this.x),
       Math.sin(this.y),
@@ -726,7 +689,7 @@ class Vector3 {
     )
   }
 
-  get cos (): Vector3 {
+  get cos () {
     return new Vector3(
       Math.cos(this.x),
       Math.cos(this.y),
@@ -738,7 +701,7 @@ class Vector3 {
    * Only threequals will pass, as opposed to within an epsilon for eq.
    * @param {Vector3} vec Vector3 to match against
    */
-  eqeqeq (vec: Vector3): boolean {
+  eqeqeq (vec) {
     return vec.x === this.x && vec.y === this.y && vec.z === this.z
   }
 
@@ -747,68 +710,67 @@ class Vector3 {
    * @param {Vector3} vec Vector3 to match against
    * @param {number|null} epsilon Rounding error correction. Defautls to 0.005
    */
-  eq (vec: Vector3, epsilon?: number = EPSILON): boolean {
+  eq (vec, epsilon = EPSILON) {
     return (Math.abs(vec.x - this.x) < epsilon) &&
       (Math.abs(vec.y - this.y) < epsilon) &&
       (Math.abs(vec.z - this.z) < epsilon)
   }
 
-  mul (x: number|Vector3|vec3, y?: number, z?: number): Vector3 {
+  mul (x, y, z) {
     if (typeof x === 'number' && typeof y !== 'number' && typeof z !== 'number') {
       // vector x linear math, ezgg
       return new Vector3(this.x * x, this.y * x, this.z * x)
     } else if (typeof x !== 'number' && isVec(3, x)) {
       // vector math!
-      const v: vec3 = x
+      const v = x
       return new Vector3(this.x * v.x, this.y * v.y, this.z * v.z)
     } else if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number') {
       return new Vector3(this.x * x, this.y * y, this.z * z)
-    } 
-      
-    throw TypeError("Input arguments were invalid.")
+    }
+
+    throw TypeError('Input arguments were invalid.')
   }
 
-  add (x: number|Vector3|vec3, y?: number, z?: number): Vector3 {
+  add (x, y, z) {
     if (typeof x === 'number' && typeof y !== 'number' && typeof z !== 'number') {
       // vector x linear math, ezgg
       return new Vector3(this.x + x, this.y + x, this.z + x)
     } else if (typeof x !== 'number' && isVec(3, x)) {
       // vector math!
-      const v: vec3 = x
+      const v = x
       return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z)
     } else if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number') {
       return new Vector3(this.x + x, this.y + y, this.z + z)
     }
-      
-    throw TypeError("Input arguments were invalid.")
+
+    throw TypeError('Input arguments were invalid.')
   }
 
-  sub (x: number|Vector3|vec3, y?: number, z?: number): Vector3 {
+  sub (x, y, z) {
     if (typeof x === 'number' && typeof y !== 'number' && typeof z !== 'number') {
       // vector x linear math, ezgg
       return new Vector3(this.x - x, this.y - x, this.z - x)
     } else if (typeof x !== 'number' && isVec(3, x)) {
       // vector math!
-      const v: vec3 = x
+      const v = x
       return new Vector3(this.x - v.x, this.y - v.y, this.z - v.z)
     } else if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number') {
       return new Vector3(this.x - x, this.y - y, this.z - z)
-    } 
-      
-    throw TypeError("Input arguments were invalid.")
+    }
 
+    throw TypeError('Input arguments were invalid.')
   }
 
-  lookAt (vec: Vector3): Quaternion {
+  lookAt (vec) {
     return Quaternion.lookAt(this, vec)
   }
 
-  get radians (): Vector3 {
+  get radians () {
     if (this.isRadians === true) {
       return this
     }
 
-    const v: Vector3 = new Vector3(
+    const v = new Vector3(
       deg2rad(this.x),
       deg2rad(this.y),
       deg2rad(this.z)
@@ -818,12 +780,12 @@ class Vector3 {
     return v
   }
 
-  get degrees (): Vector3 {
+  get degrees () {
     if (this.isRadians === false) {
       return this
     }
 
-    const v: Vector3 = new Vector3(
+    const v = new Vector3(
       rad2deg(this.x),
       rad2deg(this.y),
       rad2deg(this.z)
@@ -833,24 +795,37 @@ class Vector3 {
     return v
   }
 
-  get jpl2ovr (): Vector3 {
+  get jpl2ovr () {
     return new Vector3(this.y, -this.z, -this.x)
   }
 
-  get ovr2jpl (): Vector3 {
+  get ovr2jpl () {
     return new Vector3(-this.z, this.x, -this.y)
   }
 
-  get round (): Vector3 {
+  get round () {
     return new Vector3(Math.round(this.x), Math.round(this.y), Math.round(this.z))
   }
 
-  get ceil (): Vector3 {
+  get ceil () {
     return new Vector3(Math.ceil(this.x), Math.ceil(this.y), Math.ceil(this.z))
   }
 
-  get floor (): Vector3 {
+  get floor () {
     return new Vector3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z))
+  }
+
+  static lerp (a, b, t) {
+    return new Vector3(
+      a.x + t * (b.x - a.x),
+      a.y + t * (b.y - a.y),
+      a.z + t * (b.z - a.z)
+    )
+  }
+
+  toColor (a = 1) {
+    const { r, g, b } = this
+    return { r, g, b, a }
   }
 }
 
@@ -858,5 +833,10 @@ module.exports = {
   Vector3,
   Quaternion,
   Matrix3x4,
-  isVec
+  isVec,
+  saturate,
+  clamp,
+  rad2deg,
+  deg2rad
 }
+// # sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uXFxzcmNcXG1hdGguanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkdBQUcsQUFBSzs7Ozs7O2FBTUssQUFBUTs7Ozs7V0FLVixBQUFROztxQkFFRSxBQUFRLENBQUMsQUFBUTs7OztxQkFJakIsQUFBUSxDQUFDLEFBQVE7Ozs7aUJBSXJCLEFBQVEsR0FBRyxBQUFRLEdBQUcsQUFBUSxDQUFDLEFBQVE7Ozs7b0JBSXBDLEFBQVEsQ0FBQyxBQUFROzs7O0FBSXJDLEFBQWtDLEFBQUE7QUFDbEMsQUFJQyxBQUFBOztBQUVELEFBT0MsQUFBQTs7QUFFRCxBQUlDLEFBQUE7O0FBRUQsQUFLQyxBQUFBOztBQUVELEFBS0MsQUFBQTs7Z0JBRWUsQUFBUSxLQUFLLEFBQVEsQ0FBQyxBQUFTOzs7Ozs7Ozs7Ozs7Ozs7O0VBZ0I3QyxBQUFBLEFBQVMsQUFBQTtFQUNULEFBQUEsQUFBUyxBQUFBO0VBQ1QsQUFBQSxBQUFTLEFBQUE7RUFDVCxBQUFBLEFBQVMsQUFBQTs7Ozs7Ozs7O2dCQVNLLEFBQVEsR0FBRyxBQUFRLEdBQUcsQUFBUSxHQUFHLEFBQVE7Ozs7Ozs7Ozs7d0JBVWpDLEFBQVk7Ozs7Ozs7bUJBT2pCLEFBQVk7Ozs7Ozs7a0JBT2IsQUFBUTs7Ozs7Ozs7Ozs7d0JBV0YsQUFBWSxDQUFDLEFBQVk7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztvQkFxQjdCLEFBQVMsTUFBTSxBQUFTLENBQUMsQUFBWTs7Ozs7Ozs7Ozs7Ozs7Ozs7O2dDQWtCekIsQUFBUSxDQUFDLEFBQVk7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7MkJBNEIxQixBQUFTLENBQUMsQUFBWTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozt1QkFrQzFCLEFBQVMsQ0FBQyxBQUFZOzs7Ozs7OztXQVFsQyxBQUFZLENBQUMsQUFBUzs7Ozs7Ozs7O09BUzFCLEFBQVksU0FBUyxBQUFDLEFBQVEsV0FBVyxBQUFTOzs7Ozs7Ozs7Ozs7Ozs7OztRQWlCakQsQUFBd0IsR0FBRyxBQUFDLEFBQVEsR0FBRyxBQUFDLEFBQVEsR0FBRyxBQUFDLEFBQVE7Ozs7Ozs7O2FBUXZELEFBQU07Ozs7Ozs7Ozs7Ozs7Ozs7bUJBZ0JBLEFBQVM7Ozs7WUFJaEIsQUFBUTtZQUNSLEFBQVE7WUFDUixBQUFROzs7WUFHUixBQUFRO1lBQ1IsQUFBUTs7O1lBR1IsQUFBUTtZQUNSLEFBQVE7WUFDUixBQUFROzs7Ozs7Ozt1QkFRRyxBQUFXOzs7WUFHdEIsQUFBUTtZQUNSLEFBQVE7WUFDUixBQUFRO1lBQ1IsQUFBUTs7WUFFUixBQUFRO1lBQ1IsQUFBUTtZQUNSLEFBQVE7O1lBRVIsQUFBUTtZQUNSLEFBQVE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQThCbEIsQUFBQSxBQUFZLEFBQUE7O21CQUVLLEFBQVE7Ozs7Ozs7Ozs7Ozt3QkFZSCxBQUFXOzs7Ozs7Ozt5QkFRVixBQUFRLENBQUMsQUFBVzs7Ozs7OztpRUFPb0IsQUFBVSxDQUFDLEFBQVc7Ozs7O2NBS3pFLEFBQVc7Ozs7OztXQU1kLEFBQVk7Ozs7Ozs7OztjQVNULEFBQVc7O2NBRVgsQUFBVzs7Ozs7Ozs7Ozs7OztXQWFkLEFBQW9CO1dBQ3BCLEFBQVk7Ozs7Ozs7Ozs7Ozs7Ozs7OztRQWtCZixBQUFrQixDQUFDLEFBQVc7Ozs7Ozs7Ozs7O1FBVzlCLEFBQWtCLENBQUMsQUFBVzs7Ozs7Ozs7Ozs7UUFXOUIsQUFBa0IsQ0FBQyxBQUFXOzs7Ozs7Ozs7Ozs7O2dCQWF0QixBQUFRLEdBQUcsQUFBUSxDQUFDLEFBQVc7OzthQUdsQyxBQUFROzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O2dCQXlCTCxBQUFRLEdBQUcsQUFBUSxDQUFDLEFBQVc7YUFDbEMsQUFBUTs7Ozs7Ozs7Ozs7Ozs7Ozs7Z0JBaUJMLEFBQVEsR0FBRyxBQUFRLENBQUMsQUFBVzthQUNsQyxBQUFROzs7Ozs7Ozs7Ozs7OztrQkFjSCxBQUFROzs7Ozs7O29CQU9OLEFBQVE7Ozs7YUFJZixBQUFVOzs7O09BSWhCLEFBQVcsQ0FBQyxBQUFTOzs7O2dCQUlaLEFBQVcsSUFBSSxBQUFXLENBQUMsQUFBUztXQUN6QyxBQUFLO1dBQ0wsQUFBVTs7Ozs7Ozs7O1dBU1YsQUFBVyxDQUFDLEFBQVM7Ozs7b0JBSVosQUFBVyxJQUFJLEFBQVcsQ0FBQyxBQUFTO1dBQzdDLEFBQUs7V0FDTCxBQUFVOzs7Ozs7Ozs7Ozs7WUFZVCxBQUFLOztvREFFbUMsQUFBWTs7V0FFckQsQUFBUzs7V0FFVCxBQUFTOzs7Ozs7V0FNVCxBQUFZOzs7Ozs7Ozs7OztFQVdyQixBQUFBLEFBQVMsQUFBQTtFQUNULEFBQUEsQUFBUyxBQUFBO0VBQ1QsQUFBQSxBQUFTLEFBQUE7RUFDVCxBQUFBLEFBQXVCLEFBQUE7O2dCQUVULEFBQVEsR0FBRyxBQUFRLEdBQUcsQUFBUTs7Ozs7OzthQU9qQyxBQUFRLENBQUMsQUFBUzs7OztvQkFJWCxBQUFTOzs7O21CQUlWLEFBQVM7Ozs7a0JBSVYsQUFBUzs7OztvQkFJUCxBQUFTOzs7O3VCQUlOLEFBQVM7Ozs7b0JBSVosQUFBUzs7OztxQkFJUixBQUFTOzs7O29CQUlWLEFBQVM7Ozs7aUJBSVosQUFBUyxHQUFHLEFBQVMsQ0FBQyxBQUFTOzs7Ozs7OztlQVFqQyxBQUFTLEdBQUcsQUFBUyxDQUFDLEFBQVE7Ozs7Ozs7OzttQ0FTVixBQUFrQixDQUFDLEFBQVM7Y0FDakQsQUFBUTs7Ozs7Ozs7Ozs7Ozs7bUJBY0gsQUFBUzs7Ozs7OztrQkFPVixBQUFROzs7OztVQUtoQixBQUFROzs7O1VBSVIsQUFBUTs7OztVQUlSLEFBQVE7Ozs7VUFJUixBQUFROzs7O1VBSVIsQUFBUTs7OztVQUlSLEFBQVE7Ozs7Ozs7O3VCQVFLLEFBQVMsQ0FBQyxBQUFTOzs7Ozs7Ozs7O1lBVTlCLEFBQVM7Ozs7Ozs7O1lBUVQsQUFBUzs7Ozs7Ozs7Ozs7O2FBWVIsQUFBUyxDQUFDLEFBQVM7Ozs7Ozs7OztTQVN2QixBQUFTLFNBQVMsQUFBQyxBQUFRLFdBQVcsQUFBUzs7Ozs7O1FBTWhELEFBQXFCLEdBQUcsQUFBQyxBQUFRLEdBQUcsQUFBQyxBQUFRLENBQUMsQUFBUzs7Ozs7O2FBTWxELEFBQU07Ozs7Ozs7OztRQVNYLEFBQXFCLEdBQUcsQUFBQyxBQUFRLEdBQUcsQUFBQyxBQUFRLENBQUMsQUFBUzs7Ozs7O2FBTWxELEFBQU07Ozs7Ozs7OztRQVNYLEFBQXFCLEdBQUcsQUFBQyxBQUFRLEdBQUcsQUFBQyxBQUFRLENBQUMsQUFBUzs7Ozs7O2FBTWxELEFBQU07Ozs7Ozs7Ozs7YUFVTixBQUFTLENBQUMsQUFBWTs7OztnQkFJbkIsQUFBUzs7Ozs7V0FLZCxBQUFTOzs7Ozs7Ozs7O2dCQVVKLEFBQVM7Ozs7O1dBS2QsQUFBUzs7Ozs7Ozs7OztnQkFVSixBQUFTOzs7O2dCQUlULEFBQVM7Ozs7Y0FJWCxBQUFTOzs7O2FBSVYsQUFBUzs7OztjQUlSLEFBQVM7Ozs7Z0JBSVAsQUFBUyxHQUFHLEFBQVMsR0FBRyxBQUFROzs7Ozs7OztZQVFwQyxBQUFRLEtBQUssQUFBTyJ9

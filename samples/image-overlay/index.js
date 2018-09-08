@@ -1,5 +1,5 @@
-const vr = require('../../untyped/index')
-const VROverlay = require('../../overlay')
+const vr = require('../../~/index')
+const VROverlay = require('../../~/VROverlay')
 // const path = require('path')
 
 class ImageOverlay {
@@ -36,13 +36,15 @@ class ImageOverlay {
 
     this.overlay = new VROverlay({ system: this.system, key: 'electronvr.sample' })
     // this.overlay.width = 1
+    console.log('pre-transform')
     this.overlay.transformTrackedDeviceRelative(vr.k_unTrackedDeviceIndex_Hmd, { x: 0, y: 0, z: -1 })
+    console.log('post-transform')
 
     const size = 1024
     this.overlay.setTextureFromBuffer(this.generateGradient(size, size), { width: size, height: size })
     console.log('set texture done')
 
-    this.testEvent()
+    // this.testEvent()
 
     this.overlay.show()
   }
@@ -51,7 +53,7 @@ class ImageOverlay {
     while (true) {
       const d = await this.overlay.nextEvent()
       if (d == null) {
-        await wait(1000/15)
+        await wait(1000 / 15)
         continue
       }
       d.eventType = vr.keyFromEnum(vr.EVREventType, d.eventType)
@@ -60,7 +62,7 @@ class ImageOverlay {
   }
 }
 
-function wait(time) {
+function wait (time) {
   return new Promise((resolve) => {
     setTimeout(() => { resolve() }, time)
   })

@@ -23,7 +23,7 @@ describe('Quaternion', () => {
     expect(inputVec.eq(postConv)).toBeTruthy()
   })
 
-  test('lookAt produces the right rotation', () => {//
+  test('lookAt produces the right rotation', () => { //
     const check = new Vector3(-90, 0, 0)
     const src = Vector3.zero
     const dest = Vector3.up
@@ -46,10 +46,10 @@ describe('Quaternion', () => {
   })
 
   test('multiply', () => {
-    const q1 = new Quaternion(1,1,1,4)
-    const q2 = new Quaternion(2,2,2,8)
-    const q3 = new Quaternion(2,2,2,32)
-    const q4 = new Quaternion(1,4,1,16)
+    const q1 = new Quaternion(1, 1, 1, 4)
+    const q2 = new Quaternion(2, 2, 2, 8)
+    const q3 = new Quaternion(2, 2, 2, 32)
+    const q4 = new Quaternion(1, 4, 1, 16)
     expect(q1.mul(2).eq(q2)).toBeTruthy()
     expect(q2.mul(0.5, 2, 0.5, 2).eq(q4)).toBeTruthy()
     expect(q1.mul(q2).eq(q3)).toBeTruthy()
@@ -67,8 +67,8 @@ describe('Matrix3x4', () => {
 
   test('eq and eqeqeq does not weird', () => {
     const m1 = Matrix3x4.identity
-    const m2 = Matrix3x4.fromTransform({T: Vector3.one.add(Vector3.up), R: Vector3.forward})
-    console.log({m1: m1.flat, m2: m2.flat})
+    const m2 = Matrix3x4.fromTransform({ T: Vector3.one.add(Vector3.up), R: Vector3.forward })
+    // console.log({m1: m1.flat, m2: m2.flat})
     expect(m2.eqeqeq(m1)).toBeFalsy()
     expect(m2.eq(m1)).toBeFalsy()
   })
@@ -86,7 +86,7 @@ describe('Matrix3x4', () => {
   })
 
   test('fromTransform errors if rotation is not viable', () => {
-    expect(() => { Matrix3x4.fromTransform({ R: {x: 1} }) }).toThrowError()
+    expect(() => { Matrix3x4.fromTransform({ R: { x: 1 } }) }).toThrowError()
   })
 
   test('rotation actually rotates', () => {
@@ -119,9 +119,9 @@ describe('Matrix3x4', () => {
 
     expect(m.add(m).sub(m).eqeqeq(m)).toBeTruthy()
     expect(m.add(m).sub(m).eqeqeq(m)).toBeTruthy()
-    console.log({
-      m: m.flat, ident: Matrix3x4.identity.flat, v: m.mul(Matrix3x4.identity).flat
-    })
+    // console.log({
+    //   m: m.flat, ident: Matrix3x4.identity.flat, v: m.mul(Matrix3x4.identity).flat
+    // })
     expect(m.mul(Matrix3x4.identity).eq(m)).toBeTruthy()
   })
 
@@ -147,7 +147,7 @@ describe('Matrix3x4', () => {
 
 describe('Vector3', () => {
   test('position from matrix3x4', () => {
-    const v = new Vector3(10,2,312)
+    const v = new Vector3(10, 2, 312)
     const m = Matrix3x4.fromTransform({ T: v })
     const T = Vector3.positionFromMatrix3x4(m)
     const T2 = Vector3.positionFromMatrix3x4(m.data)
@@ -162,10 +162,10 @@ describe('Vector3', () => {
   })
 
   test('multiply', () => {
-    const q1 = new Vector3(1,1,4)
-    const q2 = new Vector3(2,2,8)
-    const q3 = new Vector3(2,2,32)
-    const q4 = new Vector3(1,4,16)
+    const q1 = new Vector3(1, 1, 4)
+    const q2 = new Vector3(2, 2, 8)
+    const q3 = new Vector3(2, 2, 32)
+    const q4 = new Vector3(1, 4, 16)
     expect(q1.mul(2).eq(q2)).toBeTruthy()
     expect(q2.mul(0.5, 2, 2).eq(q4)).toBeTruthy()
     expect(q1.mul(q2).eq(q3)).toBeTruthy()
@@ -175,10 +175,10 @@ describe('Vector3', () => {
   })
 
   test('add', () => {
-    const q1 = new Vector3(1,1,4)
-    const q2 = new Vector3(3,3,6)
-    const q3 = new Vector3(4,4,10)
-    const q4 = new Vector3(3.5,5,8)
+    const q1 = new Vector3(1, 1, 4)
+    const q2 = new Vector3(3, 3, 6)
+    const q3 = new Vector3(4, 4, 10)
+    const q4 = new Vector3(3.5, 5, 8)
     expect(q1.add(2).eq(q2)).toBeTruthy()
     expect(q2.add(0.5, 2, 2).eq(q4)).toBeTruthy()
     expect(q1.add(q2).eq(q3)).toBeTruthy()
@@ -188,10 +188,10 @@ describe('Vector3', () => {
   })
 
   test('sub', () => {
-    const q1 = new Vector3(1,1,4)
-    const q2 = new Vector3(-1,-1,2)
-    const q3 = new Vector3(2,2,2)
-    const q4 = new Vector3(-1.5,-3,0)
+    const q1 = new Vector3(1, 1, 4)
+    const q2 = new Vector3(-1, -1, 2)
+    const q3 = new Vector3(2, 2, 2)
+    const q4 = new Vector3(-1.5, -3, 0)
     expect(q1.sub(2).eq(q2)).toBeTruthy()
     expect(q2.sub(0.5, 2, 2).eq(q4)).toBeTruthy()
     expect(q1.sub(q2).eq(q3)).toBeTruthy()
@@ -212,11 +212,26 @@ describe('Vector3', () => {
   })
 
   test('deg2rad + rad2deg safety', () => {
-    const d = new Vector3(1,3,4)
+    const d = new Vector3(1, 3, 4)
     expect(d.degrees.eqeqeq(d.degrees.degrees)).toBeTruthy()
     expect(d.radians.eqeqeq(d.radians.radians)).toBeTruthy()
     expect(d.degrees.radians.eqeqeq(d.degrees.degrees.radians)).toBeTruthy()
     expect(d.radians.degrees.eqeqeq(d.radians.radians.degrees)).toBeTruthy()
     expect(d.radians.eqeqeq(d.degrees)).toBeFalsy()
+  })
+
+  test('lerp', () => {
+    const start = Vector3.one
+    const end = Vector3.zero
+
+    const c75 = new Vector3(0.75, 0.75, 0.75)
+    const c50 = new Vector3(0.5, 0.5, 0.5)
+    const c25 = new Vector3(0.25, 0.25, 0.25)
+
+    expect(Vector3.lerp(start, end, 0).eq(start)).toBeTruthy()
+    expect(Vector3.lerp(start, end, 0.25).eq(c75)).toBeTruthy()
+    expect(Vector3.lerp(start, end, 0.5).eq(c50)).toBeTruthy()
+    expect(Vector3.lerp(start, end, 0.75).eq(c25)).toBeTruthy()
+    expect(Vector3.lerp(start, end, 1).eq(end)).toBeTruthy()
   })
 })

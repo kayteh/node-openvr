@@ -202,6 +202,11 @@ NAN_METHOD(IVROverlay::SetOverlayTextureFromBuffer) {
 }
 
 NAN_METHOD(IVROverlay::SetOverlayTransformTrackedDeviceRelative) {
+    if (info.Length() < 3) {
+        Nan::ThrowError("Wrong number of arguments.");
+        return;
+    }
+
     vr::TrackedDeviceIndex_t trackedDevice = info[1]->Uint32Value();
     vr::HmdMatrix34_t transform = decodeVec3x4(info[2]);
 
@@ -211,6 +216,11 @@ NAN_METHOD(IVROverlay::SetOverlayTransformTrackedDeviceRelative) {
 }
 
 NAN_METHOD(IVROverlay::SetOverlayTransformAbsolute) {
+    if (info.Length() < 3) {
+        Nan::ThrowError("Wrong number of arguments.");
+        return;
+    }
+    
     vr::ETrackingUniverseOrigin origin = (vr::ETrackingUniverseOrigin)info[1]->Uint32Value();
     vr::HmdMatrix34_t transform = decodeVec3x4(info[2]);
 
